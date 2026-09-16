@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Board } from './Board.jsx'
 import {
   blankBoard,
@@ -6,13 +6,32 @@ import {
   cloneBoard,
   downloadWorkspace,
   normalizeWorkspace,
+  closedCount,
 } from './board-json.js'
 
-export function Workspace({ value, onChange, onResetSample }) {
+export function Workspace({
+  value,
+  onChange,
+  onResetSample,
+  cloud,
+  cloudNote,
+  cloudMiss,
+  onConnectCloud,
+  onPullCloud,
+  onForgetCloud,
+}) {
   const workspace = normalizeWorkspace(value)
   const [page, setPage] = useState('board')
   const [title, setTitle] = useState('')
   const [miss, setMiss] = useState('')
+  const [token, setToken] = useState('')
+  const [gistId, setGistId] = useState(cloud && cloud.gistId ? cloud.gistId : '')
+
+  useEffect(() => {
+    if (cloud && cloud.gistId) setGistId(cloud.gistId)
+  }, [cloud])
+
+  const connected = Boolean(cloud && cloud.token && cloud.gistId)
 
   const active =
     workspace.boards.find((board) => board.id === workspace.activeBoardId) ||
@@ -80,6 +99,7 @@ export function Workspace({ value, onChange, onResetSample }) {
         key={active.id}
         value={active}
         onChange={updateActive}
+        copyKind={connected ? 'private' : 'demo'}
         onBoards={() => {
           setMiss('')
           setPage('list')
@@ -100,22 +120,31 @@ export function Workspace({ value, onChange, onResetSample }) {
           <p className="kb-kicker">Job boards</p>
           <h1>Boards</h1>
           <p className="kb-hint">
-            Open a board to work it. North Loop Photo is the sample. A new
-            board starts empty: To do, In progress, Done.
+            This public demo is a try. Jobs stay in this browser. Get the
+            files if you want the board in your own app. Connect a private
+            gist if you want the same boards on your other devices.
           </p>
         </div>
         <div className="kb-actions">
-          <button type="button" onClick={() => downloadWorkspace(workspace)}>
+          <button type="button" className="kb-btn-ghost" onClick={() => downloadWorkspace(workspace)}>
             Download all boards
           </button>
+          <a
+            className="kb-btn-ghost"
+            href="https://github.com/Aaronlb912/kanban"
+          >
+            Get the files
+          </a>
           {onResetSample ? (
-            <button type="button" className="kb-card-remove" onClick={onResetSample}>
+            <button type="button" className="kb-btn-ghost" onClick={onResetSample}>
               Reset sample
             </button>
           ) : null}
         </div>
       </header>
       {miss ? <p className="kb-miss">{miss}</p> : null}
+      {cloudMiss ? <p className="kb-miss">{cloudMiss}</p> : null}
+      {cloudNote ? <p className="kb-note">{cloudNote}</p> : null}
       {workspace.boards.length === 0 ? (
         <p className="kb-empty-board">No boards. Make one to start.</p>
       ) : (
@@ -126,6 +155,7 @@ export function Workspace({ value, onChange, onResetSample }) {
                 <p className="kb-board-name">{board.title}</p>
                 <p className="kb-board-meta">
                   {board.columns.length} columns, {cardCount(board)} cards
+                  {closedCount(board) ? `, ${closedCount(board)} closed` : ''}
                 </p>
               </div>
               <div className="kb-actions">
@@ -134,14 +164,14 @@ export function Workspace({ value, onChange, onResetSample }) {
                 </button>
                 <button
                   type="button"
-                  className="kb-card-remove"
+                  className="kb-btn-ghost"
                   onClick={() => duplicateBoard(board.id)}
                 >
                   Duplicate
                 </button>
                 <button
                   type="button"
-                  className="kb-card-remove"
+                  className="kb-btn-ghost"
                   onClick={() => removeBoard(board.id)}
                 >
                   Remove
@@ -162,6 +192,68 @@ export function Workspace({ value, onChange, onResetSample }) {
         </label>
         <button type="submit">New board</button>
       </form>
+      {onConnectCloud ? (
+        <form
+          className="kb-cloud"
+          onSubmit={(event) => {
+            event.preventDefault()
+            onConnectCloud(token, gistId)
+          }}
+        >
+          <h2>Your copy on GitHub</h2>
+          <p className="kb-hint">
+            Make a GitHub personal access token with Gist access. Fine-grained:
+            Gists, Read and write. Classic: gist. Paste it here, not in chat.
+            Leave gist id blank to create a private gist from this browser.
+            That gist is your copy, not the public demo. On another device,
+            paste the same token and the gist id.
+          </p>
+          {connected ? (
+            <p className="kb-note">Gist {cloud.gistId}</p>
+          ) : (
+            <p className="kb-note">This browser is local only until you connect.</p>
+          )}
+          <label>
+            GitHub token
+            <input
+              type="password"
+              autoComplete="off"
+              value={token}
+              onChange={(event) => setToken(event.target.value)}
+              placeholder="ghp_ or github_pat_"
+            />
+          </label>
+          <label>
+            Gist id
+            <input
+              value={gistId}
+              onChange={(event) => setGistId(event.target.value)}
+              placeholder="Leave blank to create one"
+            />
+          </label>
+          <div className="kb-actions">
+            <button type="submit">{connected ? 'Reconnect' : 'Connect'}</button>
+            {connected ? (
+              <button type="button" className="kb-btn-ghost" onClick={onPullCloud}>
+                Load from GitHub
+              </button>
+            ) : null}
+            {connected ? (
+              <button
+                type="button"
+                className="kb-quiet"
+                onClick={() => {
+                  setToken('')
+                  setGistId('')
+                  onForgetCloud()
+                }}
+              >
+                Forget this browser
+              </button>
+            ) : null}
+          </div>
+        </form>
+      ) : null}
     </div>
   )
 }

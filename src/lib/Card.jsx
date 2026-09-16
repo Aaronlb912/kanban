@@ -4,6 +4,7 @@ export function Card({
   dropLine,
   lockDrag,
   onOpen,
+  onClose,
   onRemove,
   onDragStart,
   onDragOver,
@@ -14,6 +15,7 @@ export function Card({
     'kb-card',
     dragging ? 'kb-dragging' : '',
     dropLine === 'before' ? 'kb-drop-before' : '',
+    lockDrag ? 'kb-card-still' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -22,22 +24,35 @@ export function Card({
   const done = (card.checklist || []).filter((item) => item.done).length
   const total = (card.checklist || []).length
 
-  function open(event) {
-    if (event.target.closest('button')) return
-    onOpen(card.id)
-  }
-
   return (
     <article
       className={className}
       draggable={!lockDrag}
-      onClick={open}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
       onDragEnd={onDragEnd}
     >
-      <h3 className="kb-card-title">{card.title}</h3>
+      <div className="kb-card-head">
+        <h3 className="kb-card-title">{card.title}</h3>
+        <div className="kb-card-actions">
+          <button type="button" className="kb-quiet" onClick={() => onOpen(card.id)}>
+            Edit
+          </button>
+          {onClose ? (
+            <button type="button" className="kb-quiet" onClick={() => onClose(card.id)}>
+              Close out
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="kb-quiet"
+            onClick={() => onRemove(card.id)}
+          >
+            Remove
+          </button>
+        </div>
+      </div>
       {card.badges && card.badges.length > 0 ? (
         <ul className="kb-card-badges">
           {card.badges.map((badge) => (
@@ -53,13 +68,6 @@ export function Card({
           {done} / {total}
         </p>
       ) : null}
-      <button
-        type="button"
-        className="kb-card-remove"
-        onClick={() => onRemove(card.id)}
-      >
-        Remove
-      </button>
     </article>
   )
 }

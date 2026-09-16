@@ -67,6 +67,20 @@ export const sampleBoard = {
       ],
     },
   ],
+  closed: [
+    {
+      id: 'c-sam',
+      title: 'Sam Lee, passport photos',
+      body: 'Picked up last Tuesday. Envelope in the paid drawer.',
+      owner: 'Mira Patel',
+      due: '2026-09-09',
+      badges: [{ id: 'b-sam-paid', label: 'paid' }],
+      checklist: [{ id: 'ch-sam-1', text: 'Print check', done: true }],
+      closedAt: '2026-09-09',
+      fromColumnId: 'ready',
+      fromColumnTitle: 'Ready for pickup',
+    },
+  ],
 }
 
 export const sampleWorkspace = {

@@ -1,4 +1,4 @@
-export { Board } from './Board.jsx'
+export { pullGist, pushGist } from './gist-store.js'
 export { Workspace } from './Workspace.jsx'
 export { sampleBoard, sampleWorkspace } from './sample-board.js'
 export {

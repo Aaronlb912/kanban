@@ -3,9 +3,14 @@
 Kanban board. Columns and cards. Add work. Move it. JSON in, JSON out.
 Drop `src/lib/` into a React app you already have.
 
+Prompt file (do not wait for a paste):
+`C:\Users\aaron\OneDrive\Documents\prompts\multi-session-build-prompt-react.md`
+
 Kind: board. Not a search. Not a table editor.
 
 Local URL: http://127.0.0.1:49218/
+Public demo: https://aaronlb912.github.io/kanban/
+Repo: https://github.com/Aaronlb912/kanban
 
 Pages:
 - Board list: open, new blank, duplicate, remove. Reset sample.
@@ -13,7 +18,7 @@ Pages:
   columns, one Add card, add or remove a column, load and download
   JSON (this board or all boards).
 - New card: header Add card. Pick a column. Save. Escape cancels.
-- Edit card: click a card. Body, owner, due, badges, checklist.
+- Edit card: Edit on a card. Body, owner, due, badges, checklist.
   Duplicate. Hash or view state, not Next.
 
 Auth: none.
@@ -59,13 +64,15 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 ## This session
 
-Session 8, expand E. Persist. Search. Rename. Styling. JSON for one
-board and all boards.
+Public GitHub Pages demo. Private gist save from the Boards page.
+Visitors stay on localStorage. Token stays in the browser.
 
 ## Next session
 
-Session 9 ship: screenshots, demo video, README Demo, LinkedIn draft,
-SHIPPED.
+Open this repo and keep going. Do not paste a prompt.
+Session 9 ship only when he asks: screenshots, demo video, README Demo,
+LinkedIn draft, SHIPPED. Close-out, quiet controls, column drag, Pages,
+and gist already landed. Keep-it-open work stays on this board until then.
 
 ## SHIPPED means
 

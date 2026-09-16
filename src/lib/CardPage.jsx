@@ -6,10 +6,13 @@ export function CardPage({
   columnId,
   card,
   mode,
+  closed,
   onSave,
   onCancel,
   onRemove,
   onDuplicate,
+  onClose,
+  onReopen,
 }) {
   const isNew = mode === 'new'
   const [title, setTitle] = useState(card.title)
@@ -55,43 +58,63 @@ export function CardPage({
     setMiss('')
   }
 
-  function save(event) {
-    event.preventDefault()
+  function builtCard() {
     const trimmed = title.trim()
     if (!trimmed) {
       setMiss('Need a job title.')
-      return
+      return null
     }
     if (board.columns.length === 0) {
       setMiss('Add a column first.')
-      return
+      return null
     }
     if (!nextColumnId) {
       setMiss('Pick a column.')
-      return
+      return null
     }
-    onSave(
-      normalizeCard({
-        ...card,
-        title: trimmed,
-        body: body.trim(),
-        owner: owner.trim(),
-        due: due.trim(),
-        badges,
-        checklist,
-      }),
-      nextColumnId,
-    )
+    setMiss('')
+    return normalizeCard({
+      ...card,
+      title: trimmed,
+      body: body.trim(),
+      owner: owner.trim(),
+      due: due.trim(),
+      badges,
+      checklist,
+    })
+  }
+
+  function save(event) {
+    event.preventDefault()
+    const next = builtCard()
+    if (!next) return
+    onSave(next, nextColumnId)
+  }
+
+  function closeOut() {
+    const next = builtCard()
+    if (!next) return
+    onClose(next, nextColumnId)
+  }
+
+  function putBack() {
+    const next = builtCard()
+    if (!next) return
+    onReopen(next, nextColumnId)
   }
 
   return (
     <div className="kb kb-page">
-      <p className="kb-kicker">{isNew ? 'Add card' : 'Edit card'}</p>
+      <p className="kb-kicker">
+        {isNew ? 'Add card' : closed ? 'Closed job' : 'Edit card'}
+      </p>
       <h1>{isNew ? 'New card' : card.title}</h1>
       <p className="kb-hint">
         {isNew
           ? 'Fill the job, pick a column, then save. Escape goes back.'
-          : 'Change the job, then save. Cancel or Escape leaves the board as it was.'}
+          : closed
+            ? 'This job is off the board. Search still finds it. Put it back if it is not done.'
+            : 'Change the job, then save. Close out when the work is finished.'}
       </p>
       {miss ? <p className="kb-miss">{miss}</p> : null}
       <form className="kb-card-form" onSubmit={save}>
@@ -126,7 +149,7 @@ export function CardPage({
           </label>
         </div>
         <label>
-          Column
+          {closed ? 'Put back in' : 'Column'}
           <select
             value={nextColumnId}
             onChange={(event) => setNextColumnId(event.target.value)}
@@ -144,10 +167,10 @@ export function CardPage({
           <ul className="kb-badge-list">
             {badges.map((badge) => (
               <li key={badge.id}>
-                <span>{badge.label}</span>
+                <span className="kb-badge">{badge.label}</span>
                 <button
                   type="button"
-                  className="kb-card-remove"
+                  className="kb-quiet"
                   onClick={() => setBadges(badges.filter((item) => item.id !== badge.id))}
                 >
                   Remove
@@ -167,7 +190,7 @@ export function CardPage({
               }}
               placeholder="rush, paid"
             />
-            <button type="button" onClick={addBadge}>
+            <button type="button" className="kb-btn-ghost" onClick={addBadge}>
               Add badge
             </button>
           </div>
@@ -194,7 +217,7 @@ export function CardPage({
                 </label>
                 <button
                   type="button"
-                  className="kb-card-remove"
+                  className="kb-quiet"
                   onClick={() =>
                     setChecklist(checklist.filter((row) => row.id !== item.id))
                   }
@@ -216,23 +239,32 @@ export function CardPage({
               }}
               placeholder="A step"
             />
-            <button type="button" onClick={addCheck}>
+            <button type="button" className="kb-btn-ghost" onClick={addCheck}>
               Add step
             </button>
           </div>
         </fieldset>
         <div className="kb-actions">
           <button type="submit">Save</button>
-          <button type="button" className="kb-card-remove" onClick={onCancel}>
+          <button type="button" className="kb-btn-ghost" onClick={onCancel}>
             Cancel
           </button>
           {isNew ? null : (
-            <button type="button" className="kb-card-remove" onClick={onDuplicate}>
+            <button type="button" className="kb-btn-ghost" onClick={onDuplicate}>
               Duplicate card
             </button>
           )}
+          {isNew ? null : closed ? (
+            <button type="button" onClick={putBack}>
+              Put back
+            </button>
+          ) : (
+            <button type="button" className="kb-btn-ghost" onClick={closeOut}>
+              Close out
+            </button>
+          )}
           {isNew ? null : (
-            <button type="button" className="kb-card-remove" onClick={() => onRemove(card.id)}>
+            <button type="button" className="kb-quiet" onClick={() => onRemove(card.id)}>
               Remove card
             </button>
           )}

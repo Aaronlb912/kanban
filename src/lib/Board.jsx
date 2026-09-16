@@ -8,32 +8,51 @@ import {
   downloadBoard,
   findCard,
   moveCard,
-  moveColumn,
+  placeColumn,
   newColumnId,
   nextColumnColor,
   normalizeCard,
   parseFile,
+  closeCard as closeOutCard,
+  reopenCard,
+  removeClosedCard,
+  updateClosedCard,
   updateCard,
 } from './board-json.js'
 import './board.css'
 
-export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAll }) {
+export function Board({
+  value,
+  onChange,
+  onBoards,
+  onLoadWorkspace,
+  onDownloadAll,
+  copyKind,
+}) {
   const drag = useRef(null)
   const fileInput = useRef(null)
   const [dragId, setDragId] = useState(null)
+  const [colDragId, setColDragId] = useState(null)
   const [over, setOver] = useState(null)
+  const [colOver, setColOver] = useState(null)
   const [miss, setMiss] = useState('')
   const [columnName, setColumnName] = useState('')
   const [boardTitle, setBoardTitle] = useState(value.title)
   const [query, setQuery] = useState('')
   const [badge, setBadge] = useState('')
+  const [renaming, setRenaming] = useState(false)
   const [view, setView] = useState({ name: 'board' })
+  const [showClosed, setShowClosed] = useState(false)
   const skipClick = useRef(false)
   const titleInput = useRef(null)
 
   useEffect(() => {
     setBoardTitle(value.title)
   }, [value.title])
+
+  useEffect(() => {
+    if (renaming && titleInput.current) titleInput.current.focus()
+  }, [renaming])
 
   const filtering = Boolean(query.trim() || badge)
   const badges = boardBadges(value)
@@ -56,13 +75,69 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
       event.preventDefault()
       return
     }
-    drag.current = { columnId, cardId }
+    drag.current = { type: 'card', columnId, cardId }
     setDragId(cardId)
+    setColDragId(null)
+    setColOver(null)
     event.dataTransfer.setData('text/plain', cardId)
     event.dataTransfer.effectAllowed = 'move'
   }
 
+  function startColumnDrag(event, columnId) {
+    if (event.target.closest('button, input, select')) {
+      event.preventDefault()
+      return
+    }
+    drag.current = { type: 'column', columnId }
+    setColDragId(columnId)
+    setDragId(null)
+    setOver(null)
+    event.dataTransfer.setData('text/plain', columnId)
+    event.dataTransfer.effectAllowed = 'move'
+  }
+
+  function columnBox(event) {
+    const el =
+      event.currentTarget.closest && event.currentTarget.closest('.kb-column')
+        ? event.currentTarget.closest('.kb-column')
+        : event.currentTarget
+    return el.getBoundingClientRect()
+  }
+
+  function overColumnSlot(event, columnId) {
+    if (!drag.current || drag.current.type !== 'column') return
+    event.preventDefault()
+    event.stopPropagation()
+    event.dataTransfer.dropEffect = 'move'
+    const rect = columnBox(event)
+    const before = event.clientX < rect.left + rect.width / 2
+    if (!colOver || colOver.columnId !== columnId || colOver.before !== before) {
+      setColOver({ columnId, before })
+    }
+  }
+
+  function dropColumnAt(event, columnId) {
+    const from = drag.current
+    if (!from || from.type !== 'column') return
+    event.preventDefault()
+    event.stopPropagation()
+    const destIndex = value.columns.findIndex((column) => column.id === columnId)
+    if (destIndex < 0) return
+    const rect = columnBox(event)
+    const before = event.clientX < rect.left + rect.width / 2
+    const toIndex = before ? destIndex : destIndex + 1
+    onChange(placeColumn(value, from.columnId, toIndex))
+    drag.current = null
+    setColDragId(null)
+    setColOver(null)
+    skipClick.current = true
+  }
+
   function overCard(event, columnId, cardIndex) {
+    if (drag.current && drag.current.type === 'column') {
+      overColumnSlot(event, columnId)
+      return
+    }
     event.preventDefault()
     event.stopPropagation()
     event.dataTransfer.dropEffect = 'move'
@@ -75,6 +150,10 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
   }
 
   function overColumn(event, columnId) {
+    if (drag.current && drag.current.type === 'column') {
+      overColumnSlot(event, columnId)
+      return
+    }
     event.preventDefault()
     event.dataTransfer.dropEffect = 'move'
     const column = value.columns.find((item) => item.id === columnId)
@@ -89,7 +168,7 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
     event.stopPropagation()
     if (filtering) return
     const from = drag.current
-    if (!from) return
+    if (!from || from.type !== 'card') return
     onChange(moveCard(value, from.columnId, from.cardId, columnId, index))
     drag.current = null
     setDragId(null)
@@ -98,12 +177,20 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
   }
 
   function dropOnCard(event, columnId, cardIndex) {
+    if (drag.current && drag.current.type === 'column') {
+      dropColumnAt(event, columnId)
+      return
+    }
     const rect = event.currentTarget.getBoundingClientRect()
     const after = event.clientY > rect.top + rect.height / 2
     dropAt(event, columnId, after ? cardIndex + 1 : cardIndex)
   }
 
   function dropOnColumn(event, columnId) {
+    if (drag.current && drag.current.type === 'column') {
+      dropColumnAt(event, columnId)
+      return
+    }
     const column = value.columns.find((item) => item.id === columnId)
     dropAt(event, columnId, column ? column.cards.length : 0)
   }
@@ -111,7 +198,9 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
   function endDrag() {
     drag.current = null
     setDragId(null)
+    setColDragId(null)
     setOver(null)
+    setColOver(null)
   }
 
   function setColumnColor(columnId, color) {
@@ -138,10 +227,6 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
         return { ...column, title: trimmed }
       }),
     })
-  }
-
-  function shiftColumn(columnId, dir) {
-    onChange(moveColumn(value, columnId, dir))
   }
 
   function removeColumn(columnId) {
@@ -181,7 +266,14 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
     }
     setMiss('')
     setBoardTitle(trimmed)
+    setRenaming(false)
     if (trimmed !== value.title) onChange({ ...value, title: trimmed })
+  }
+
+  function cancelRename() {
+    setBoardTitle(value.title)
+    setRenaming(false)
+    setMiss('')
   }
 
   function loadFile(event) {
@@ -209,12 +301,24 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
     reader.readAsText(file)
   }
 
+  function closeOut(columnId, cardId) {
+    onChange(closeOutCard(value, columnId, cardId))
+  }
+
+  function putBack(cardId, columnId) {
+    onChange(reopenCard(value, cardId, columnId))
+  }
+
   function openCard(columnId, cardId) {
     if (skipClick.current) {
       skipClick.current = false
       return
     }
     setView({ name: 'edit', columnId, cardId })
+  }
+
+  function openClosed(cardId) {
+    setView({ name: 'edit', cardId, closed: true })
   }
 
   function openNew() {
@@ -239,13 +343,41 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
   }
 
   function saveCard(nextCard, nextColumnId) {
+    const found = findCard(value, nextCard.id)
+    if (found && found.closed) {
+      onChange(updateClosedCard(value, nextCard))
+      setView({ name: 'board' })
+      setMiss('')
+      return
+    }
+    const columnId = found && found.column ? found.column.id : view.columnId
+    let board = updateCard(value, columnId, nextCard)
+    if (nextColumnId && nextColumnId !== columnId) {
+      const dest = board.columns.find((column) => column.id === nextColumnId)
+      const at = dest ? dest.cards.length : 0
+      board = moveCard(board, columnId, nextCard.id, nextColumnId, at)
+    }
+    onChange(board)
+    setView({ name: 'board' })
+    setMiss('')
+  }
+
+  function closeOpenCard(nextCard, nextColumnId) {
     let board = updateCard(value, view.columnId, nextCard)
+    const fromId = nextColumnId && nextColumnId !== view.columnId ? nextColumnId : view.columnId
     if (nextColumnId && nextColumnId !== view.columnId) {
       const dest = board.columns.find((column) => column.id === nextColumnId)
       const at = dest ? dest.cards.length : 0
       board = moveCard(board, view.columnId, nextCard.id, nextColumnId, at)
     }
-    onChange(board)
+    onChange(closeOutCard(board, fromId, nextCard.id))
+    setView({ name: 'board' })
+    setMiss('')
+  }
+
+  function reopenOpenCard(nextCard, nextColumnId) {
+    const board = updateClosedCard(value, nextCard)
+    onChange(reopenCard(board, nextCard.id, nextColumnId))
     setView({ name: 'board' })
     setMiss('')
   }
@@ -256,7 +388,9 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
   }
 
   function removeOpenCard(cardId) {
-    removeCard(view.columnId, cardId)
+    const found = findCard(value, cardId)
+    if (found && found.closed) onChange(removeClosedCard(value, cardId))
+    else if (found && found.column) removeCard(found.column.id, cardId)
     setView({ name: 'board' })
   }
 
@@ -264,17 +398,27 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
     const found = findCard(value, view.cardId)
     if (!found) return
     const copy = cloneCard(found.card)
+    const destId = found.closed
+      ? found.card.fromColumnId &&
+        value.columns.some((column) => column.id === found.card.fromColumnId)
+        ? found.card.fromColumnId
+        : value.columns[0]
+          ? value.columns[0].id
+          : ''
+      : found.column.id
+    if (!destId) return
     onChange({
       ...value,
       columns: value.columns.map((column) => {
-        if (column.id !== found.column.id) return column
+        if (column.id !== destId) return column
+        if (found.closed) return { ...column, cards: [...column.cards, copy] }
         const index = column.cards.findIndex((card) => card.id === found.card.id)
         const cards = [...column.cards]
         cards.splice(index + 1, 0, copy)
         return { ...column, cards }
       }),
     })
-    setView({ name: 'edit', columnId: found.column.id, cardId: copy.id })
+    setView({ name: 'edit', columnId: destId, cardId: copy.id })
   }
 
   const open =
@@ -294,17 +438,28 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
   }
 
   if (view.name === 'edit' && open) {
+    const editColumnId = open.closed
+      ? open.card.fromColumnId &&
+        value.columns.some((column) => column.id === open.card.fromColumnId)
+        ? open.card.fromColumnId
+        : value.columns[0]
+          ? value.columns[0].id
+          : ''
+      : open.column.id
     return (
       <CardPage
         key={open.card.id}
         mode="edit"
+        closed={open.closed}
         board={value}
-        columnId={open.column.id}
+        columnId={editColumnId}
         card={open.card}
         onSave={saveCard}
         onCancel={cancelEdit}
         onRemove={removeOpenCard}
         onDuplicate={duplicateOpenCard}
+        onClose={closeOpenCard}
+        onReopen={reopenOpenCard}
       />
     )
   }
@@ -313,48 +468,82 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
     <div className="kb">
       <header className="kb-top">
         <div>
-          <p className="kb-kicker">Job board</p>
-          <div className="kb-title-form">
-            <label>
-              Board name
-              <input
-                ref={titleInput}
-                className="kb-title-input"
-                value={boardTitle}
-                onChange={(event) => setBoardTitle(event.target.value)}
-                onBlur={saveBoardTitle}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    saveBoardTitle(event)
-                  }
+          <p className="kb-kicker">
+            {copyKind === 'private' ? 'Private copy' : 'Public demo'}
+          </p>
+          {renaming ? (
+            <div className="kb-title-form">
+              <label>
+                Board name
+                <input
+                  ref={titleInput}
+                  className="kb-title-input"
+                  value={boardTitle}
+                  onChange={(event) => setBoardTitle(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      saveBoardTitle(event)
+                    }
+                    if (event.key === 'Escape') {
+                      event.preventDefault()
+                      cancelRename()
+                    }
+                  }}
+                />
+              </label>
+              <div className="kb-actions">
+                <button type="button" onClick={saveBoardTitle}>
+                  Save name
+                </button>
+                <button type="button" className="kb-btn-ghost" onClick={cancelRename}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="kb-title-row">
+              <h1>{value.title}</h1>
+              <button
+                type="button"
+                className="kb-quiet"
+                onClick={() => {
+                  setBoardTitle(value.title)
+                  setRenaming(true)
                 }}
-              />
-            </label>
-          </div>
+              >
+                Edit name
+              </button>
+            </div>
+          )}
           {value.note ? <p className="kb-note">{value.note}</p> : null}
           <p className="kb-hint">
-            Add card opens a page. Search finds jobs. Click a card to edit it.
+            Add card opens a page. Search finds jobs, including closed ones.
+            Close out sends a finished job off the board. Drag a column by its name.
           </p>
         </div>
         <div className="kb-actions">
           {onBoards ? (
-            <button type="button" className="kb-card-remove" onClick={onBoards}>
+            <button type="button" className="kb-btn-ghost" onClick={onBoards}>
               Boards
             </button>
           ) : null}
           <button type="button" onClick={openNew}>
             Add card
           </button>
-          <button type="button" onClick={() => downloadBoard(value)}>
+          <button type="button" className="kb-btn-ghost" onClick={() => downloadBoard(value)}>
             Download this board
           </button>
           {onDownloadAll ? (
-            <button type="button" onClick={onDownloadAll}>
+            <button type="button" className="kb-btn-ghost" onClick={onDownloadAll}>
               Download all boards
             </button>
           ) : null}
-          <button type="button" onClick={() => fileInput.current && fileInput.current.click()}>
+          <button
+            type="button"
+            className="kb-btn-ghost"
+            onClick={() => fileInput.current && fileInput.current.click()}
+          >
             Load JSON
           </button>
           <input
@@ -394,7 +583,7 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
         <p className="kb-empty-board">No columns on this board. Add one to start.</p>
       ) : (
         <div className="kb-columns">
-          {value.columns.map((column, index) => {
+          {value.columns.map((column) => {
             const cards = filtering
               ? column.cards.filter((card) => cardMatches(card, query, badge))
               : column.cards
@@ -405,16 +594,19 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
                 cards={cards}
                 filtering={filtering}
                 dragId={dragId}
+                colDragId={colDragId}
                 over={over}
-                canMoveLeft={index > 0}
-                canMoveRight={index < value.columns.length - 1}
+                colOver={colOver}
                 onRemoveCard={removeCard}
                 onRemoveColumn={removeColumn}
                 onRename={renameColumn}
-                onMove={shiftColumn}
                 onColor={setColumnColor}
                 onOpenCard={openCard}
+                onCloseCard={closeOut}
                 onDragStart={startDrag}
+                onColumnDragStart={startColumnDrag}
+                onColumnDragOver={overColumnSlot}
+                onColumnDrop={dropColumnAt}
                 onDragOverCard={overCard}
                 onDragOverColumn={overColumn}
                 onDropCard={dropOnCard}
@@ -436,6 +628,86 @@ export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAl
         </label>
         <button type="submit">Add column</button>
       </form>
+      <ClosedJobs
+        items={value.closed || []}
+        filtering={filtering}
+        query={query}
+        badge={badge}
+        shown={showClosed}
+        onToggle={() => setShowClosed(!showClosed)}
+        onOpen={openClosed}
+        onReopen={putBack}
+        onRemove={(cardId) => onChange(removeClosedCard(value, cardId))}
+      />
     </div>
+  )
+}
+
+function ClosedJobs({
+  items,
+  filtering,
+  query,
+  badge,
+  shown,
+  onToggle,
+  onOpen,
+  onReopen,
+  onRemove,
+}) {
+  const matches = filtering
+    ? items.filter((card) => cardMatches(card, query, badge))
+    : items
+  const visible = filtering || shown ? matches : []
+  const count = items.length
+
+  return (
+    <section className="kb-closed" aria-label="Closed jobs">
+      <header className="kb-closed-head">
+        <div className="kb-column-name">
+          <h2>Closed jobs</h2>
+          <span className="kb-count">{count}</span>
+        </div>
+        {count > 0 && !filtering ? (
+          <button type="button" className="kb-quiet" onClick={onToggle}>
+            {shown ? 'Hide' : 'Show'}
+          </button>
+        ) : null}
+      </header>
+      {count === 0 ? (
+        <p className="kb-empty">
+          Close out a finished job and it lands here. Search still finds it.
+        </p>
+      ) : filtering && matches.length === 0 ? (
+        <p className="kb-empty">No closed jobs match.</p>
+      ) : visible.length === 0 ? (
+        <p className="kb-empty">Hidden so they stay off the board. Show if you need one.</p>
+      ) : (
+        <ul className="kb-closed-list">
+          {visible.map((card) => (
+            <li key={card.id} className="kb-closed-row">
+              <div>
+                <p className="kb-closed-name">{card.title}</p>
+                <p className="kb-closed-meta">
+                  {card.closedAt ? `Closed ${card.closedAt}` : 'Closed'}
+                  {card.fromColumnTitle ? ` · was ${card.fromColumnTitle}` : ''}
+                  {card.owner ? ` · ${card.owner}` : ''}
+                </p>
+              </div>
+              <div className="kb-closed-actions">
+                <button type="button" className="kb-quiet" onClick={() => onOpen(card.id)}>
+                  Open
+                </button>
+                <button type="button" className="kb-quiet" onClick={() => onReopen(card.id)}>
+                  Put back
+                </button>
+                <button type="button" className="kb-quiet" onClick={() => onRemove(card.id)}>
+                  Remove
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }

@@ -7,16 +7,19 @@ export function Column({
   cards,
   filtering,
   dragId,
+  colDragId,
   over,
-  canMoveLeft,
-  canMoveRight,
+  colOver,
   onRemoveCard,
   onRemoveColumn,
   onRename,
-  onMove,
   onColor,
   onOpenCard,
+  onCloseCard,
   onDragStart,
+  onColumnDragStart,
+  onColumnDragOver,
+  onColumnDrop,
   onDragOverCard,
   onDragOverColumn,
   onDropCard,
@@ -24,6 +27,7 @@ export function Column({
   onDragEnd,
 }) {
   const visible = cards || column.cards
+  const [editing, setEditing] = useState(false)
   const [title, setTitle] = useState(column.title)
 
   useEffect(() => {
@@ -38,6 +42,12 @@ export function Column({
       return
     }
     if (trimmed !== column.title) onRename(column.id, trimmed)
+    setEditing(false)
+  }
+
+  function cancelEdit() {
+    setTitle(column.title)
+    setEditing(false)
   }
 
   const dropOnEnd =
@@ -47,70 +57,106 @@ export function Column({
     over.index === column.cards.length
 
   const color = normalizeColor(column.color)
+  const className = [
+    'kb-column',
+    over && over.columnId === column.id ? 'kb-column-over' : '',
+    colDragId === column.id ? 'kb-dragging' : '',
+    colOver && colOver.columnId === column.id
+      ? colOver.before
+        ? 'kb-col-drop-before'
+        : 'kb-col-drop-after'
+      : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <section
-      className={`kb-column${over && over.columnId === column.id ? ' kb-column-over' : ''}`}
+      className={className}
       style={{ '--kb-col': color }}
       aria-label={column.title}
+      onDragOver={(event) => onColumnDragOver(event, column.id)}
+      onDrop={(event) => onColumnDrop(event, column.id)}
     >
-      <header className="kb-column-head">
-        <label className="kb-column-title">
-          Column name
-          <input
-            id={`col-${column.id}`}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            onBlur={commitTitle}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                event.currentTarget.blur()
-              }
-            }}
-          />
-        </label>
-        <span className="kb-count">
-          {filtering ? `${visible.length} / ${column.cards.length}` : column.cards.length}
-        </span>
-        <div className="kb-column-tools">
-          <button
-            type="button"
-            className="kb-card-remove"
-            disabled={!canMoveLeft}
-            onClick={() => onMove(column.id, -1)}
-          >
-            Left
-          </button>
-          <button
-            type="button"
-            className="kb-card-remove"
-            disabled={!canMoveRight}
-            onClick={() => onMove(column.id, 1)}
-          >
-            Right
-          </button>
-          <label className="kb-color">
-            Color
-            <select
-              value={color}
-              onChange={(event) => onColor(column.id, event.target.value)}
-            >
-              {COLUMN_COLORS.map((item) => (
-                <option key={item.hex} value={item.hex}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="kb-card-remove"
-            onClick={() => onRemoveColumn(column.id)}
-          >
-            Remove column
-          </button>
-        </div>
+      <header
+        className="kb-column-head"
+        draggable={!editing}
+        onDragStart={(event) => onColumnDragStart(event, column.id)}
+        onDragEnd={onDragEnd}
+      >
+        {editing ? (
+          <div className="kb-column-edit">
+            <label className="kb-column-title">
+              Column name
+              <input
+                autoFocus
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    commitTitle()
+                  }
+                  if (event.key === 'Escape') {
+                    event.preventDefault()
+                    cancelEdit()
+                  }
+                }}
+              />
+            </label>
+            <label className="kb-color">
+              Color
+              <select
+                value={color}
+                onChange={(event) => onColor(column.id, event.target.value)}
+              >
+                {COLUMN_COLORS.map((item) => (
+                  <option key={item.hex} value={item.hex}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="kb-actions">
+              <button type="button" onClick={commitTitle}>
+                Save
+              </button>
+              <button type="button" className="kb-btn-ghost" onClick={cancelEdit}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="kb-column-name">
+              <h2>{column.title}</h2>
+              <span className="kb-count">
+                {filtering
+                  ? `${visible.length} / ${column.cards.length}`
+                  : column.cards.length}
+              </span>
+            </div>
+            <div className="kb-column-tools">
+              <button
+                type="button"
+                className="kb-quiet"
+                onClick={() => {
+                  setTitle(column.title)
+                  setEditing(true)
+                }}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className="kb-quiet"
+                onClick={() => onRemoveColumn(column.id)}
+              >
+                Remove
+              </button>
+            </div>
+          </>
+        )}
       </header>
       <div
         className="kb-cards"
@@ -138,6 +184,7 @@ export function Column({
               lockDrag={filtering}
               onRemove={(cardId) => onRemoveCard(column.id, cardId)}
               onOpen={(cardId) => onOpenCard(column.id, cardId)}
+              onClose={onCloseCard ? (cardId) => onCloseCard(column.id, cardId) : undefined}
               onDragStart={(event) => onDragStart(event, column.id, card.id)}
               onDragOver={(event) => onDragOverCard(event, column.id, index)}
               onDrop={(event) => onDropCard(event, column.id, index)}

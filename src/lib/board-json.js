@@ -114,6 +114,31 @@ export function normalizeCard(raw) {
   }
 }
 
+export function normalizeClosedCard(raw) {
+  const card = normalizeCard(raw)
+  return {
+    ...card,
+    closedAt: typeof raw.closedAt === 'string' ? raw.closedAt.trim() : '',
+    fromColumnId: typeof raw.fromColumnId === 'string' ? raw.fromColumnId : '',
+    fromColumnTitle: typeof raw.fromColumnTitle === 'string' ? raw.fromColumnTitle : '',
+  }
+}
+
+function closedList(raw) {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+    .map((item) => normalizeClosedCard(item))
+    .filter((item) => item.title)
+}
+
+export function todayStamp() {
+  const d = new Date()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${month}-${day}`
+}
+
 export function normalizeBoard(raw) {
   const title = typeof raw.title === 'string' ? raw.title.trim() : ''
   const note = typeof raw.note === 'string' ? raw.note : ''
@@ -129,6 +154,7 @@ export function normalizeBoard(raw) {
     title: title || 'Board',
     note,
     columns,
+    closed: closedList(raw.closed),
   }
 }
 
@@ -157,19 +183,32 @@ export function cloneCard(card) {
 
 export function cloneBoard(board) {
   const src = normalizeBoard(board)
-  return {
-    ...src,
-    id: newBoardId(),
-    title: `${src.title} copy`,
-    columns: src.columns.map((column) => ({
+  const idMap = {}
+  const columns = src.columns.map((column) => {
+    const id = newColumnId()
+    idMap[column.id] = id
+    return {
       ...column,
-      id: newColumnId(),
+      id,
       cards: column.cards.map((card) => ({
         ...card,
         id: newCardId(),
         badges: card.badges.map((badge) => ({ ...badge, id: newBadgeId() })),
         checklist: card.checklist.map((item) => ({ ...item, id: newCheckId() })),
       })),
+    }
+  })
+  return {
+    ...src,
+    id: newBoardId(),
+    title: `${src.title} copy`,
+    columns,
+    closed: src.closed.map((card) => ({
+      ...card,
+      id: newCardId(),
+      fromColumnId: idMap[card.fromColumnId] || '',
+      badges: card.badges.map((badge) => ({ ...badge, id: newBadgeId() })),
+      checklist: card.checklist.map((item) => ({ ...item, id: newCheckId() })),
     })),
   }
 }
@@ -203,13 +242,15 @@ export function cardMatches(card, query, badge) {
 export function boardBadges(board) {
   const seen = new Set()
   const labels = []
-  for (const column of board.columns || []) {
-    for (const card of column.cards || []) {
-      for (const badge of card.badges || []) {
-        if (!badge.label || seen.has(badge.label)) continue
-        seen.add(badge.label)
-        labels.push(badge.label)
-      }
+  const piles = [
+    ...(board.columns || []).flatMap((column) => column.cards || []),
+    ...(board.closed || []),
+  ]
+  for (const card of piles) {
+    for (const badge of card.badges || []) {
+      if (!badge.label || seen.has(badge.label)) continue
+      seen.add(badge.label)
+      labels.push(badge.label)
     }
   }
   return labels
@@ -219,9 +260,19 @@ export function moveColumn(board, columnId, dir) {
   const index = board.columns.findIndex((column) => column.id === columnId)
   const next = index + dir
   if (index < 0 || next < 0 || next >= board.columns.length) return board
+  return placeColumn(board, columnId, dir > 0 ? next + 1 : next)
+}
+
+export function placeColumn(board, columnId, toIndex) {
+  const from = board.columns.findIndex((column) => column.id === columnId)
+  if (from < 0) return board
+  let insert = toIndex
+  if (from < insert) insert -= 1
+  if (insert < 0) insert = 0
   const columns = [...board.columns]
-  const [column] = columns.splice(index, 1)
-  columns.splice(next, 0, column)
+  const [column] = columns.splice(from, 1)
+  if (insert > columns.length) insert = columns.length
+  columns.splice(insert, 0, column)
   return { ...board, columns }
 }
 
@@ -251,6 +302,10 @@ export function normalizeWorkspace(raw) {
 
 export function cardCount(board) {
   return (board.columns || []).reduce((n, column) => n + column.cards.length, 0)
+}
+
+export function closedCount(board) {
+  return (board.closed || []).length
 }
 
 function parseBoardObject(data) {
@@ -289,6 +344,18 @@ function parseBoardObject(data) {
 
   const title = typeof data.title === 'string' ? data.title.trim() : ''
   const note = typeof data.note === 'string' ? data.note : ''
+  const closed = []
+  const closedRaw = Array.isArray(data.closed) ? data.closed : []
+  for (const card of closedRaw) {
+    if (!card || typeof card !== 'object' || Array.isArray(card)) {
+      return { ok: false, error: 'A closed card in that file is not a card.' }
+    }
+    const normalized = normalizeClosedCard(card)
+    if (!normalized.title) {
+      return { ok: false, error: 'A closed card needs a title.' }
+    }
+    closed.push(normalized)
+  }
   return {
     ok: true,
     board: {
@@ -296,6 +363,7 @@ function parseBoardObject(data) {
       title: title || 'Board',
       note,
       columns,
+      closed,
     },
   }
 }
@@ -365,12 +433,83 @@ export function updateCard(board, columnId, card) {
   }
 }
 
+export function updateClosedCard(board, card) {
+  return {
+    ...board,
+    closed: (board.closed || []).map((item) => {
+      if (item.id !== card.id) return item
+      return {
+        ...normalizeClosedCard({
+          ...item,
+          ...card,
+          closedAt: item.closedAt,
+          fromColumnId: item.fromColumnId,
+          fromColumnTitle: item.fromColumnTitle,
+        }),
+      }
+    }),
+  }
+}
+
 export function findCard(board, cardId) {
   for (const column of board.columns) {
     const card = column.cards.find((item) => item.id === cardId)
-    if (card) return { column, card }
+    if (card) return { column, card, closed: false }
   }
+  const card = (board.closed || []).find((item) => item.id === cardId)
+  if (card) return { column: null, card, closed: true }
   return null
+}
+
+export function closeCard(board, columnId, cardId) {
+  const column = board.columns.find((item) => item.id === columnId)
+  if (!column) return board
+  const card = column.cards.find((item) => item.id === cardId)
+  if (!card) return board
+  return {
+    ...board,
+    columns: board.columns.map((item) => {
+      if (item.id !== columnId) return item
+      return { ...item, cards: item.cards.filter((row) => row.id !== cardId) }
+    }),
+    closed: [
+      normalizeClosedCard({
+        ...card,
+        closedAt: todayStamp(),
+        fromColumnId: column.id,
+        fromColumnTitle: column.title,
+      }),
+      ...(board.closed || []),
+    ],
+  }
+}
+
+export function reopenCard(board, cardId, toColumnId) {
+  const item = (board.closed || []).find((card) => card.id === cardId)
+  if (!item) return board
+  const destId =
+    toColumnId ||
+    (board.columns.some((column) => column.id === item.fromColumnId)
+      ? item.fromColumnId
+      : '') ||
+    (board.columns[0] ? board.columns[0].id : '')
+  if (!destId) return board
+  const card = normalizeCard(item)
+  return {
+    ...board,
+    closed: (board.closed || []).filter((row) => row.id !== cardId),
+    columns: board.columns.map((column) => {
+      if (column.id !== destId) return column
+      return { ...column, cards: [...column.cards, card] }
+    }),
+  }
+}
+
+export function removeClosedCard(board, cardId) {
+  return {
+    ...board,
+    closed: (board.closed || []).filter((item) => item.id !== cardId),
+  }
 }
 
 export function moveCard(board, fromColumnId, cardId, toColumnId, toIndex) {
