@@ -1,6 +1,7 @@
 export { Board } from './Board.jsx'
 export { sampleBoard } from './sample-board.js'
 export {
+  COLUMN_COLORS,
   downloadBoard,
   moveCard,
   normalizeBoard,

@@ -37,6 +37,46 @@ export function newBoardId() {
   return newId('board')
 }
 
+export const COLUMN_COLORS = [
+  { id: 'ink', name: 'Ink', hex: '#2c3a32' },
+  { id: 'ochre', name: 'Ochre', hex: '#8a6a2a' },
+  { id: 'clay', name: 'Clay', hex: '#7a3b2e' },
+  { id: 'moss', name: 'Moss', hex: '#3d5a45' },
+  { id: 'slate', name: 'Slate', hex: '#4a5560' },
+  { id: 'plum', name: 'Plum', hex: '#5c3d5e' },
+]
+
+const DEFAULT_COLOR = COLUMN_COLORS[0].hex
+
+export function normalizeColor(value) {
+  if (typeof value !== 'string' || !value) return DEFAULT_COLOR
+  const trimmed = value.trim().toLowerCase()
+  const byId = COLUMN_COLORS.find((item) => item.id === trimmed)
+  if (byId) return byId.hex
+  const byHex = COLUMN_COLORS.find((item) => item.hex.toLowerCase() === trimmed)
+  if (byHex) return byHex.hex
+  return DEFAULT_COLOR
+}
+
+export function nextColumnColor(columns) {
+  const used = new Set((columns || []).map((column) => normalizeColor(column.color)))
+  const unused = COLUMN_COLORS.find((item) => !used.has(item.hex))
+  return unused ? unused.hex : COLUMN_COLORS[columns.length % COLUMN_COLORS.length].hex
+}
+
+function normalizeColumn(raw) {
+  return {
+    id: typeof raw.id === 'string' && raw.id ? raw.id : newColumnId(),
+    title: typeof raw.title === 'string' ? raw.title.trim() : '',
+    color: normalizeColor(raw.color),
+    cards: Array.isArray(raw.cards)
+      ? raw.cards
+          .filter((card) => card && typeof card === 'object' && !Array.isArray(card))
+          .map((card) => normalizeCard(card))
+      : [],
+  }
+}
+
 export function normalizeCard(raw) {
   const title = typeof raw.title === 'string' ? raw.title.trim() : ''
   const note = typeof raw.note === 'string' ? raw.note : ''
@@ -80,15 +120,7 @@ export function normalizeBoard(raw) {
   const columns = Array.isArray(raw.columns)
     ? raw.columns
         .filter((column) => column && typeof column === 'object' && !Array.isArray(column))
-        .map((column) => ({
-          id: typeof column.id === 'string' && column.id ? column.id : newColumnId(),
-          title: typeof column.title === 'string' ? column.title.trim() : '',
-          cards: Array.isArray(column.cards)
-            ? column.cards
-                .filter((card) => card && typeof card === 'object' && !Array.isArray(card))
-                .map((card) => normalizeCard(card))
-            : [],
-        }))
+        .map((column) => normalizeColumn(column))
         .filter((column) => column.title)
     : []
 
@@ -129,6 +161,7 @@ function parseBoardObject(data) {
     columns.push({
       id: typeof raw.id === 'string' && raw.id ? raw.id : newColumnId(),
       title: colTitle,
+      color: normalizeColor(raw.color),
       cards,
     })
   }

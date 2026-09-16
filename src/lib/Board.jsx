@@ -6,6 +6,7 @@ import {
   findCard,
   moveCard,
   newColumnId,
+  nextColumnColor,
   normalizeCard,
   parseBoard,
   updateCard,
@@ -117,6 +118,16 @@ export function Board({ value, onChange }) {
     setOver(null)
   }
 
+  function setColumnColor(columnId, color) {
+    onChange({
+      ...value,
+      columns: value.columns.map((column) => {
+        if (column.id !== columnId) return column
+        return { ...column, color }
+      }),
+    })
+  }
+
   function removeColumn(columnId) {
     setMiss('')
     onChange({
@@ -138,7 +149,7 @@ export function Board({ value, onChange }) {
       ...value,
       columns: [
         ...value.columns,
-        { id: newColumnId(), title: trimmed, cards: [] },
+        { id: newColumnId(), title: trimmed, color: nextColumnColor(value.columns), cards: [] },
       ],
     })
   }
@@ -248,6 +259,7 @@ export function Board({ value, onChange }) {
               onAddCard={addCard}
               onRemoveCard={removeCard}
               onRemoveColumn={removeColumn}
+              onColor={setColumnColor}
               onOpenCard={openCard}
               onDragStart={startDrag}
               onDragOverCard={overCard}

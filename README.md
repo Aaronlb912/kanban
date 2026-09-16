@@ -24,10 +24,12 @@ Copy `src/lib/`. That folder is the component.
 - `index.js` - the import
 
 No account. Nothing sends mail. Click a card to edit the job (details,
-owner, due date, badges, checklist). Drag a card to another column, or
-up and down in the same column. Add or remove a column. An empty board
-is a real state. Load JSON for your jobs. Old JSON with only `title`
-and `note` still loads; `note` becomes `body`.
+owner, due date, badges, checklist). Badges show on the card. Each
+column has a color; cards in that column use it. Drag a card to another
+column, or up and down in the same column. Add or remove a column. An
+empty board is a real state. Load JSON for your jobs. Old JSON with
+only `title` and `note` still loads; `note` becomes `body`. Missing
+column color becomes Ink.
 
 ## Run the demo
 
@@ -67,6 +69,7 @@ Board object:
     {
       "id": "intake",
       "title": "Intake",
+      "color": "#8a6a2a",
       "cards": [{
         "id": "c-rae",
         "title": "Rae Chen, senior portraits",
@@ -86,7 +89,8 @@ stays on the page until a good file loads.
 
 ## Make it yours
 
-Change `value.title` and column titles. Add or remove columns on the
-page. Click a card to edit it. Edit `src/lib/board.css`. Card objects
-are `{ id, title, body, owner, due, badges, checklist }`. A `note`
-field still loads as `body`.
+Change `value.title` and column titles. Pick a column color (Ink, Ochre,
+Clay, Moss, Slate, Plum). Add or remove columns on the page. Click a
+card to edit it. Edit `src/lib/board.css`. Card objects are
+`{ id, title, body, owner, due, badges, checklist }`. A `note` field
+still loads as `body`.

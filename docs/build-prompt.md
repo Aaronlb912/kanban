@@ -26,7 +26,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
       remove a column, empty board.
 - [x] Session 4 (expand A): richer cards, click to edit, old JSON still
       loads.
-- [ ] Session 5 (expand B): column color, badges on compact cards.
+- [x] Session 5 (expand B): column color, badges on compact cards.
 - [ ] Session 6 (expand C): one Add card page.
 - [ ] Session 7 (expand D): many boards, blank template.
 - [ ] Session 8 (expand E): persist, search, rename, styling.
@@ -55,13 +55,13 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 ## This session
 
-Session 4, expand A. Richer card fields. Click a card to edit. Old
-JSON with only title and note still loads.
+Session 5, expand B. Preset column colors. Cards pick up the column
+color. Badges show on compact cards.
 
 ## Next session
 
-Expand B. Preset column colors. Cards pick up the column color.
-Badges show on compact cards.
+Expand C. One Add card in the header. Opens a new-card page with a
+column picker. Remove the per-column add forms.
 
 ## SHIPPED means
 

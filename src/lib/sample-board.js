@@ -6,6 +6,7 @@ export const sampleBoard = {
     {
       id: 'intake',
       title: 'Intake',
+      color: '#8a6a2a',
       cards: [
         {
           id: 'c-rae',
@@ -33,6 +34,7 @@ export const sampleBoard = {
     {
       id: 'edit',
       title: 'In edit',
+      color: '#7a3b2e',
       cards: [
         {
           id: 'c-dana',
@@ -51,6 +53,7 @@ export const sampleBoard = {
     {
       id: 'ready',
       title: 'Ready for pickup',
+      color: '#3d5a45',
       cards: [
         {
           id: 'c-eli',

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Card } from './Card.jsx'
+import { COLUMN_COLORS, normalizeColor } from './board-json.js'
 
 export function Column({
   column,
@@ -8,6 +9,7 @@ export function Column({
   onAddCard,
   onRemoveCard,
   onRemoveColumn,
+  onColor,
   onOpenCard,
   onDragStart,
   onDragOverCard,
@@ -36,14 +38,30 @@ export function Column({
   const dropOnEnd =
     over && over.columnId === column.id && over.index === column.cards.length
 
+  const color = normalizeColor(column.color)
+
   return (
     <section
       className={`kb-column${over && over.columnId === column.id ? ' kb-column-over' : ''}`}
+      style={{ '--kb-col': color }}
       aria-labelledby={`col-${column.id}`}
     >
       <header className="kb-column-head">
         <h2 id={`col-${column.id}`}>{column.title}</h2>
         <span className="kb-count">{column.cards.length}</span>
+        <label className="kb-color">
+          Color
+          <select
+            value={color}
+            onChange={(event) => onColor(column.id, event.target.value)}
+          >
+            {COLUMN_COLORS.map((item) => (
+              <option key={item.hex} value={item.hex}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           type="button"
           className="kb-card-remove"

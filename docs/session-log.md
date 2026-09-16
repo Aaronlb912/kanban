@@ -67,3 +67,19 @@ Next session:
 - Expand B: preset column colors
 - Cards pick up the column color
 - Badges on compact cards
+
+## 2026-09-16 — session 5 (expand B)
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+
+Landed:
+- Column color presets (Ink, Ochre, Clay, Moss, Slate, Plum)
+- Cards use the column color
+- Change a column color, cards follow
+- Badges on compact cards
+- Old JSON with no color loads as Ink
+
+Next session:
+- Expand C: one Add card page
+- Remove per-column add forms
+- Column picker on the new-card page

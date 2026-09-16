@@ -40,6 +40,13 @@ export function Card({
       {body ? <p className="kb-card-note">{body}</p> : null}
       {card.owner ? <p className="kb-card-meta">{card.owner}</p> : null}
       {card.due ? <p className="kb-card-meta">Due {card.due}</p> : null}
+      {card.badges && card.badges.length > 0 ? (
+        <ul className="kb-card-badges">
+          {card.badges.map((badge) => (
+            <li key={badge.id}>{badge.label}</li>
+          ))}
+        </ul>
+      ) : null}
       {total > 0 ? (
         <p className="kb-card-meta">
           {done}/{total}
