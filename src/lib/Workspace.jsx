@@ -111,7 +111,6 @@ export function Workspace({
     <div className="kb">
       <header className="kb-top">
         <div>
-          <p className="kb-kicker">Job boards</p>
           <h1>Boards</h1>
           <p className="kb-hint">
             Jobs stay on this computer until you sign in below. Get the
