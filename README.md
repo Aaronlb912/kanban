@@ -9,7 +9,7 @@ https://aaronlb912.github.io/kanban/
 
 Jobs on that page stay in your browser. Get the files if you want the
 board in your own app. To use the same boards on your laptop and phone,
-follow Private copy below.
+sign in on the Boards page.
 
 The demo starts on a photo studio board (North Loop Photo). Names are
 fake. Make a blank board for your own jobs.
@@ -31,11 +31,12 @@ Copy `src/lib/`. That folder is the component.
 - `board.css` - the look
 - `board-json.js` - download, load parse, blank template, and move
   helpers
-- `gist-store.js` - optional private gist save and load (demo only)
+- `cloud-store.js` - optional sign-in save for the demo
 - `sample-board.js` - North Loop Photo sample
 - `index.js` - the import
 
-No account. Nothing sends mail. Boards opens the list. A new board
+No account to try the board. Sign in is optional if you want the same
+boards on another device. Nothing sends mail. Boards opens the list. A new board
 starts empty with To do, In progress, and Done. Duplicate a board.
 You cannot remove the last one. The demo keeps boards after a refresh
 (Reset sample on the list if you want North Loop back). Add card in
@@ -83,26 +84,18 @@ Voice is Microsoft Andrew Neural. Music is Wallpaper by Kevin MacLeod (incompete
 
 ## Private copy
 
-The public page is a try. Boards stay in that browser until you save
-a private copy. A gist is a private GitHub note. The Boards page can
-keep your boards there so your laptop and phone share the same list.
+The public page is a try. Boards stay in that browser until you sign
+in.
 
-1. Sign in to GitHub. A free account is enough.
-2. Open this page. Pick how long the key lasts. Click Generate token.
+1. Open the Boards page.
+2. Click Sign in. A window opens.
+3. Make a free account, or sign in if you already have one.
+4. This page remembers you. Edits save to that account.
+5. On another device, open the same demo and sign in with that same
+   account.
 
-   https://github.com/settings/tokens/new?scopes=gist&description=Kanban%20boards
-
-3. Copy the code GitHub shows. It only shows once. Keep it to
-   yourself.
-4. On the Boards page, paste that code in GitHub key.
-5. First time: leave Gist ID blank. Click Connect. The page will show
-   a Gist ID. Write that down.
-6. On another device, open the same demo, paste the same GitHub key
-   and that Gist ID, then Connect.
-
-The key stays in that browser. It is not in this repo. If GitHub
-sends you to a longer form instead, find Gists and set it to Read
-and write.
+You do not copy a key or an id. Sign out if this computer should stop
+saving to the account.
 
 ## Use it in your own React app
 
@@ -144,8 +137,8 @@ export function OneBoard() {
 - `value` - workspace object (`activeBoardId` plus `boards`)
 - `onChange` - function, called with the next workspace
 - `onResetSample` - optional. Shows Reset sample on the list
-- `cloud`, `cloudNote`, `cloudMiss`, `onConnectCloud`, `onPullCloud`,
-  `onForgetCloud` - optional. The demo uses these for the gist form.
+- `cloud`, `cloudNote`, `cloudMiss`, `onSignInCloud`, `onPullCloud`,
+  `onForgetCloud` - optional. The demo uses these for Sign in.
   A host app can omit them and save `value` itself.
 
 `Board`
@@ -160,7 +153,7 @@ export function OneBoard() {
   Anything else is Public demo.
 
 The demo (`src/App.jsx`) writes the workspace to `localStorage`. If you
-connect a gist, it also saves that JSON to GitHub. `Workspace` and
+sign in, it also saves that JSON to your account. `Workspace` and
 `Board` only use `value` / `onChange` for the board data, so a host
 app can save however it wants.
 

@@ -64,12 +64,13 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 ## This session
 
-README Demo: three tool stills, walkthrough mp4, github.com player.
-LinkedIn draft on disk, not committed.
+Replace gist keys with a one-click Puter sign-in. No token or gist id.
+Visitors stay on localStorage until they sign in.
 
 ## Next session
 
-SHIPPED. Do not start a second product in this repo.
+Keep-it-open work on this board if he asks. Do not start a second
+product in this repo.
 
 ## SHIPPED means
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Board } from './Board.jsx'
 import {
   blankBoard,
@@ -16,7 +16,7 @@ export function Workspace({
   cloud,
   cloudNote,
   cloudMiss,
-  onConnectCloud,
+  onSignInCloud,
   onPullCloud,
   onForgetCloud,
 }) {
@@ -24,14 +24,8 @@ export function Workspace({
   const [page, setPage] = useState('board')
   const [title, setTitle] = useState('')
   const [miss, setMiss] = useState('')
-  const [token, setToken] = useState('')
-  const [gistId, setGistId] = useState(cloud && cloud.gistId ? cloud.gistId : '')
 
-  useEffect(() => {
-    if (cloud && cloud.gistId) setGistId(cloud.gistId)
-  }, [cloud])
-
-  const connected = Boolean(cloud && cloud.token && cloud.gistId)
+  const connected = Boolean(cloud && cloud.signedIn)
 
   const active =
     workspace.boards.find((board) => board.id === workspace.activeBoardId) ||
@@ -120,8 +114,8 @@ export function Workspace({
           <p className="kb-kicker">Job boards</p>
           <h1>Boards</h1>
           <p className="kb-hint">
-            Jobs stay on this computer until you save a private copy below.
-            Get the files if you want the board in your own app.
+            Jobs stay on this computer until you sign in below. Get the
+            files if you want the board in your own app.
           </p>
         </div>
         <div className="kb-actions">
@@ -191,95 +185,43 @@ export function Workspace({
         </label>
         <button type="submit">New board</button>
       </form>
-      {onConnectCloud ? (
-        <form
-          className="kb-cloud"
-          onSubmit={(event) => {
-            event.preventDefault()
-            onConnectCloud(token, gistId)
-          }}
-        >
+      {onSignInCloud ? (
+        <div className="kb-cloud">
           <h2>Keep these boards on your other devices</h2>
           <p className="kb-hint">
-            A gist is a private GitHub note. This page can save your boards
-            there so your laptop and phone share the same list.
+            Sign in. A window opens. Make a free account, or use one you
+            already have. This page remembers you. On your phone, open the
+            same demo and sign in with that same account. No keys to copy.
           </p>
-          <ol className="kb-steps">
-            <li>Sign in to GitHub. A free account is enough.</li>
-            <li>
-              Open{' '}
-              <a
-                href="https://github.com/settings/tokens/new?scopes=gist&description=Kanban%20boards"
-                target="_blank"
-                rel="noreferrer"
-              >
-                this GitHub key page</a>. Pick how long the key lasts. Click
-              Generate token.
-            </li>
-            <li>
-              Copy the code GitHub shows. It only shows once. Keep it to
-              yourself.
-            </li>
-            <li>Paste that code in GitHub key below.</li>
-            <li>
-              First time: leave Gist ID blank. Click Connect. The page will
-              show a Gist ID. Write that down.
-            </li>
-            <li>
-              On another device, paste the same GitHub key and that Gist ID,
-              then Connect.
-            </li>
-          </ol>
           {connected ? (
             <p className="kb-note">
-              Your Gist ID is {cloud.gistId}. Copy that. You need it on your
-              other devices.
+              {cloud.name
+                ? `Signed in as ${cloud.name}.`
+                : 'Signed in. Boards save to this account.'}
             </p>
           ) : (
             <p className="kb-note">
-              Until you connect, boards stay in this browser only.
+              Until you sign in, boards stay in this browser only.
             </p>
           )}
-          <label>
-            GitHub key
-            <input
-              type="password"
-              autoComplete="off"
-              value={token}
-              onChange={(event) => setToken(event.target.value)}
-              placeholder="Paste the code from GitHub"
-            />
-          </label>
-          <label>
-            Gist ID (first time: leave this blank)
-            <input
-              value={gistId}
-              onChange={(event) => setGistId(event.target.value)}
-              placeholder="Leave blank the first time"
-            />
-          </label>
           <div className="kb-actions">
-            <button type="submit">{connected ? 'Reconnect' : 'Connect'}</button>
+            {connected ? null : (
+              <button type="button" onClick={onSignInCloud}>
+                Sign in
+              </button>
+            )}
             {connected ? (
               <button type="button" className="kb-btn-ghost" onClick={onPullCloud}>
-                Load from GitHub
+                Load saved boards
               </button>
             ) : null}
             {connected ? (
-              <button
-                type="button"
-                className="kb-quiet"
-                onClick={() => {
-                  setToken('')
-                  setGistId('')
-                  onForgetCloud()
-                }}
-              >
-                Forget this browser
+              <button type="button" className="kb-quiet" onClick={onForgetCloud}>
+                Sign out
               </button>
             ) : null}
           </div>
-        </form>
+        </div>
       ) : null}
     </div>
   )

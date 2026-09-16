@@ -156,3 +156,16 @@ Landed:
 - LinkedIn draft at docs/linkedin-post.md (local, not committed)
 
 SHIPPED.
+
+## 2026-09-16 — sign-in instead of gist
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+Live: https://aaronlb912.github.io/kanban/
+
+Landed:
+- Boards page Sign in (Puter). No GitHub key or gist id.
+- Same account on another device loads the boards.
+- localStorage still holds the try-it demo.
+
+Next session:
+- Keep-it-open work only if he asks.

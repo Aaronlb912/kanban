@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Workspace, normalizeWorkspace, sampleWorkspace } from './lib/index.js'
-import { pullGist, pushGist } from './lib/gist-store.js'
+import {
+  cloudSignIn,
+  cloudSignOut,
+  cloudSignedIn,
+  cloudUserName,
+  pullCloudWorkspace,
+  pushCloudWorkspace,
+} from './lib/cloud-store.js'
 
 const STORAGE_KEY = 'kanban-workspace'
-const CLOUD_KEY = 'kanban-gist'
 
 function readStored() {
   try {
@@ -23,65 +29,49 @@ function writeStored(workspace) {
   }
 }
 
-function readCloud() {
-  try {
-    const raw = localStorage.getItem(CLOUD_KEY)
-    if (!raw) return { token: '', gistId: '' }
-    const data = JSON.parse(raw)
-    return {
-      token: typeof data.token === 'string' ? data.token : '',
-      gistId: typeof data.gistId === 'string' ? data.gistId : '',
-    }
-  } catch {
-    return { token: '', gistId: '' }
-  }
-}
-
-function writeCloud(cloud) {
-  try {
-    localStorage.setItem(CLOUD_KEY, JSON.stringify(cloud))
-  } catch {
-    // Token stays in memory for this tab.
-  }
-}
-
 export default function App() {
   const [workspace, setWorkspace] = useState(readStored)
-  const [cloud, setCloud] = useState(readCloud)
+  const [cloud, setCloud] = useState({ signedIn: false, name: '' })
   const [cloudNote, setCloudNote] = useState('')
   const [cloudMiss, setCloudMiss] = useState('')
   const pending = useRef(null)
   const timer = useRef(null)
-  const cloudRef = useRef(cloud)
-  cloudRef.current = cloud
+  const signedIn = useRef(false)
 
   useEffect(() => {
-    const { token, gistId } = readCloud()
-    if (!token || !gistId) return
+    try {
+      localStorage.removeItem('kanban-gist')
+    } catch {
+      // Old gist keys can stay if storage is blocked.
+    }
     let gone = false
-    setCloudNote('Loading your GitHub copy.')
-    pullGist(token, gistId).then((result) => {
+    async function boot() {
+      if (!cloudSignedIn()) return
+      const name = await cloudUserName()
       if (gone) return
-      if (!result.ok) {
-        setCloudMiss(result.error)
+      signedIn.current = true
+      setCloud({ signedIn: true, name })
+      setCloudNote('Loading your boards.')
+      const pulled = await pullCloudWorkspace()
+      if (gone) return
+      if (!pulled.ok) {
+        setCloudMiss(pulled.error)
         setCloudNote('')
         return
       }
-      const next = normalizeWorkspace(result.data)
-      setWorkspace(next)
-      writeStored(next)
+      if (pulled.data) {
+        const next = normalizeWorkspace(pulled.data)
+        setWorkspace(next)
+        writeStored(next)
+      }
       setCloudMiss('')
-      setCloudNote('Using your GitHub copy.')
-    })
+      setCloudNote(name ? `Signed in as ${name}.` : 'Signed in. Saving to your account.')
+    }
+    boot()
     return () => {
       gone = true
     }
   }, [])
-
-  function persistCloud(nextCloud) {
-    setCloud(nextCloud)
-    writeCloud(nextCloud)
-  }
 
   function change(next) {
     const normalized = normalizeWorkspace(next)
@@ -89,74 +79,85 @@ export default function App() {
     writeStored(normalized)
     pending.current = normalized
     if (timer.current) clearTimeout(timer.current)
-    const { token, gistId } = cloudRef.current
-    if (!token || !gistId) return
+    if (!signedIn.current) return
     timer.current = setTimeout(() => {
       const body = pending.current
       if (!body) return
-      setCloudNote('Saving to GitHub.')
-      pushGist(token, gistId, body).then((result) => {
+      setCloudNote('Saving.')
+      pushCloudWorkspace(body).then((result) => {
         if (!result.ok) {
           setCloudMiss(result.error)
           setCloudNote('')
           return
         }
         setCloudMiss('')
-        setCloudNote('Saved to GitHub.')
+        setCloudNote('Saved.')
       })
     }, 800)
   }
 
-  async function connectCloud(token, gistId) {
-    const trimmedToken = token.trim()
-    const trimmedGist = gistId.trim()
-    if (!trimmedToken) {
-      setCloudMiss('Paste the GitHub key first.')
+  async function signInCloud() {
+    setCloudMiss('')
+    const result = await cloudSignIn()
+    if (!result.ok) {
+      setCloudMiss(result.error)
       return
     }
-    setCloudMiss('')
-    if (trimmedGist) {
-      const pulled = await pullGist(trimmedToken, trimmedGist)
-      if (!pulled.ok) {
-        setCloudMiss(pulled.error)
-        return
-      }
-      persistCloud({ token: trimmedToken, gistId: pulled.gistId })
+    signedIn.current = true
+    setCloud({ signedIn: true, name: result.name })
+    const pulled = await pullCloudWorkspace()
+    if (!pulled.ok) {
+      setCloudMiss(pulled.error)
+      return
+    }
+    if (pulled.data) {
       const next = normalizeWorkspace(pulled.data)
       setWorkspace(next)
       writeStored(next)
-      setCloudNote('Using your GitHub copy.')
+      setCloudNote(
+        result.name
+          ? `Signed in as ${result.name}. Loaded your boards.`
+          : 'Signed in. Loaded your boards.',
+      )
       return
     }
-    const pushed = await pushGist(trimmedToken, '', workspace)
+    const pushed = await pushCloudWorkspace(workspace)
     if (!pushed.ok) {
       setCloudMiss(pushed.error)
       return
     }
-    persistCloud({ token: trimmedToken, gistId: pushed.gistId })
-    setCloudNote('Saved. Copy the Gist ID on this page. You need it on your other devices.')
+    setCloudNote(
+      result.name
+        ? `Signed in as ${result.name}. Boards will follow this account.`
+        : 'Signed in. Boards will follow this account.',
+    )
   }
 
   async function pullCloud() {
-    const { token, gistId } = cloudRef.current
-    if (!token || !gistId) {
-      setCloudMiss('Connect on this page first.')
+    if (!signedIn.current) {
+      setCloudMiss('Sign in first.')
       return
     }
-    const pulled = await pullGist(token, gistId)
+    const pulled = await pullCloudWorkspace()
     if (!pulled.ok) {
       setCloudMiss(pulled.error)
+      return
+    }
+    if (!pulled.data) {
+      setCloudNote('No saved boards on this account yet.')
       return
     }
     const next = normalizeWorkspace(pulled.data)
     setWorkspace(next)
     writeStored(next)
     setCloudMiss('')
-    setCloudNote('Loaded from GitHub.')
+    setCloudNote('Loaded your boards.')
   }
 
   function forgetCloud() {
-    persistCloud({ token: '', gistId: '' })
+    cloudSignOut()
+    signedIn.current = false
+    setCloud({ signedIn: false, name: '' })
     setCloudNote('This browser is only saving on this computer now.')
     setCloudMiss('')
   }
@@ -176,7 +177,7 @@ export default function App() {
       cloud={cloud}
       cloudNote={cloudNote}
       cloudMiss={cloudMiss}
-      onConnectCloud={connectCloud}
+      onSignInCloud={signInCloud}
       onPullCloud={pullCloud}
       onForgetCloud={forgetCloud}
     />
