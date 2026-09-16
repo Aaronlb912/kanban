@@ -111,7 +111,7 @@ export default function App() {
     const trimmedToken = token.trim()
     const trimmedGist = gistId.trim()
     if (!trimmedToken) {
-      setCloudMiss('Need a GitHub token with Gist access.')
+      setCloudMiss('Paste the GitHub key first.')
       return
     }
     setCloudMiss('')
@@ -134,13 +134,13 @@ export default function App() {
       return
     }
     persistCloud({ token: trimmedToken, gistId: pushed.gistId })
-    setCloudNote('Saved a private gist. Use that gist id on your other devices.')
+    setCloudNote('Saved. Copy the Gist ID on this page. You need it on your other devices.')
   }
 
   async function pullCloud() {
     const { token, gistId } = cloudRef.current
     if (!token || !gistId) {
-      setCloudMiss('Connect a GitHub gist first.')
+      setCloudMiss('Connect on this page first.')
       return
     }
     const pulled = await pullGist(token, gistId)
@@ -157,7 +157,7 @@ export default function App() {
 
   function forgetCloud() {
     persistCloud({ token: '', gistId: '' })
-    setCloudNote('This browser is local only now.')
+    setCloudNote('This browser is only saving on this computer now.')
     setCloudMiss('')
   }
 

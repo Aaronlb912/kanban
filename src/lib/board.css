@@ -547,6 +547,23 @@
   font-weight: 400;
 }
 
+.kb-cloud a {
+  color: var(--kb-ink);
+}
+
+.kb-steps {
+  margin: 0;
+  padding-left: 1.2em;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--kb-text);
+}
+
+.kb-steps li + li {
+  margin-top: 6px;
+}
+
 .kb-cloud label {
   display: flex;
   flex-direction: column;

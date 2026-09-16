@@ -13,9 +13,9 @@ function authHeaders(token) {
 }
 
 function gistError(status) {
-  if (status === 401) return 'GitHub said that token is not allowed.'
-  if (status === 403) return 'GitHub refused that request. Check the token scopes.'
-  if (status === 404) return 'No gist with that id for this token.'
+  if (status === 401) return 'That GitHub key is wrong or expired. Make a new one.'
+  if (status === 403) return 'That GitHub key cannot save gists. Make a new one and leave gist checked.'
+  if (status === 404) return 'No gist with that ID for this GitHub key. Check the Gist ID.'
   return 'Could not reach your GitHub copy.'
 }
 

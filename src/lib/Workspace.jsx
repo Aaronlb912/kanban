@@ -120,9 +120,8 @@ export function Workspace({
           <p className="kb-kicker">Job boards</p>
           <h1>Boards</h1>
           <p className="kb-hint">
-            This public demo is a try. Jobs stay in this browser. Get the
-            files if you want the board in your own app. Connect a private
-            gist if you want the same boards on your other devices.
+            Jobs stay on this computer until you save a private copy below.
+            Get the files if you want the board in your own app.
           </p>
         </div>
         <div className="kb-actions">
@@ -200,35 +199,63 @@ export function Workspace({
             onConnectCloud(token, gistId)
           }}
         >
-          <h2>Your copy on GitHub</h2>
+          <h2>Keep these boards on your other devices</h2>
           <p className="kb-hint">
-            Make a GitHub personal access token with Gist access. Fine-grained:
-            Gists, Read and write. Classic: gist. Paste it here, not in chat.
-            Leave gist id blank to create a private gist from this browser.
-            That gist is your copy, not the public demo. On another device,
-            paste the same token and the gist id.
+            A gist is a private GitHub note. This page can save your boards
+            there so your laptop and phone share the same list.
           </p>
+          <ol className="kb-steps">
+            <li>Sign in to GitHub. A free account is enough.</li>
+            <li>
+              Open{' '}
+              <a
+                href="https://github.com/settings/tokens/new?scopes=gist&description=Kanban%20boards"
+                target="_blank"
+                rel="noreferrer"
+              >
+                this GitHub key page</a>. Pick how long the key lasts. Click
+              Generate token.
+            </li>
+            <li>
+              Copy the code GitHub shows. It only shows once. Keep it to
+              yourself.
+            </li>
+            <li>Paste that code in GitHub key below.</li>
+            <li>
+              First time: leave Gist ID blank. Click Connect. The page will
+              show a Gist ID. Write that down.
+            </li>
+            <li>
+              On another device, paste the same GitHub key and that Gist ID,
+              then Connect.
+            </li>
+          </ol>
           {connected ? (
-            <p className="kb-note">Gist {cloud.gistId}</p>
+            <p className="kb-note">
+              Your Gist ID is {cloud.gistId}. Copy that. You need it on your
+              other devices.
+            </p>
           ) : (
-            <p className="kb-note">This browser is local only until you connect.</p>
+            <p className="kb-note">
+              Until you connect, boards stay in this browser only.
+            </p>
           )}
           <label>
-            GitHub token
+            GitHub key
             <input
               type="password"
               autoComplete="off"
               value={token}
               onChange={(event) => setToken(event.target.value)}
-              placeholder="ghp_ or github_pat_"
+              placeholder="Paste the code from GitHub"
             />
           </label>
           <label>
-            Gist id
+            Gist ID (first time: leave this blank)
             <input
               value={gistId}
               onChange={(event) => setGistId(event.target.value)}
-              placeholder="Leave blank to create one"
+              placeholder="Leave blank the first time"
             />
           </label>
           <div className="kb-actions">

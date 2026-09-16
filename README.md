@@ -8,8 +8,8 @@ Try it:
 https://aaronlb912.github.io/kanban/
 
 Jobs on that page stay in your browser. Get the files if you want the
-board in your own app. Connect a private gist on the Boards page if
-you want the same boards on your other devices.
+board in your own app. To use the same boards on your laptop and phone,
+follow Private copy below.
 
 The demo starts on a photo studio board (North Loop Photo). Names are
 fake. Make a blank board for your own jobs.
@@ -69,15 +69,26 @@ Open http://127.0.0.1:49218/
 
 ## Private copy
 
-The public page is a try. To keep one set of boards on your laptop
-and phone, connect a private gist on the Boards page.
+The public page is a try. Boards stay in that browser until you save
+a private copy. A gist is a private GitHub note. The Boards page can
+keep your boards there so your laptop and phone share the same list.
 
-1. GitHub → Settings → Developer settings → Personal access tokens.
-2. Fine-grained: Gists, Read and write. Classic: gist.
-3. Paste the token on the Boards page. Leave gist id blank to create
-   one. On the next device, paste the same token and that gist id.
+1. Sign in to GitHub. A free account is enough.
+2. Open this page. Pick how long the key lasts. Click Generate token.
 
-The token stays in that browser. It is not in the repo.
+   https://github.com/settings/tokens/new?scopes=gist&description=Kanban%20boards
+
+3. Copy the code GitHub shows. It only shows once. Keep it to
+   yourself.
+4. On the Boards page, paste that code in GitHub key.
+5. First time: leave Gist ID blank. Click Connect. The page will show
+   a Gist ID. Write that down.
+6. On another device, open the same demo, paste the same GitHub key
+   and that Gist ID, then Connect.
+
+The key stays in that browser. It is not in this repo. If GitHub
+sends you to a longer form instead, find Gists and set it to Read
+and write.
 
 ## Use it in your own React app
 
