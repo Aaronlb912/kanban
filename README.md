@@ -32,7 +32,7 @@ Copy `src/lib/`. That folder is the component.
 - `board-json.js` - download, load parse, blank template, and move
   helpers
 - `cloud-store.js` - optional sign-in save for the demo
-- `sample-board.js` - North Loop Photo sample
+- `sample-board.js` - DEMO BOARD North Loop Photo sample
 - `index.js` - the import
 
 No account to try the board. Sign in is optional if you want the same
@@ -70,13 +70,13 @@ Open http://127.0.0.1:49218/
 
 ## Demo
 
-![North Loop Photo jobs in columns.](docs/media/kanban-page.png)
+![The board list. DEMO BOARD North Loop Photo is the sample.](docs/media/kanban-page.png)
 
-![Search for Rae. The other columns go quiet.](docs/media/kanban-result.png)
+![DEMO BOARD North Loop Photo with jobs in columns.](docs/media/kanban-result.png)
 
 ![Save with no title. Need a job title.](docs/media/kanban-miss.png)
 
-https://github.com/user-attachments/assets/33dfbf07-7748-46e3-8a84-fd586158bc0e
+https://github.com/user-attachments/assets/ed773a4b-862d-41a2-91a9-2db076a54a96
 
 Repo copy: [docs/media/kanban-demo.mp4](docs/media/kanban-demo.mp4)
 

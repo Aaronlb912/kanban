@@ -169,3 +169,12 @@ Landed:
 
 Next session:
 - Keep-it-open work only if he asks.
+
+## 2026-09-16 — Demo stills and video
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+Live: https://aaronlb912.github.io/kanban/
+
+Landed:
+- README stills: board list, open DEMO BOARD, blank title miss
+- New walkthrough mp4 and github.com player URL
