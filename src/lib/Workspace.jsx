@@ -21,7 +21,7 @@ export function Workspace({
   onForgetCloud,
 }) {
   const workspace = normalizeWorkspace(value)
-  const [page, setPage] = useState('board')
+  const [page, setPage] = useState('list')
   const [title, setTitle] = useState('')
   const [miss, setMiss] = useState('')
 

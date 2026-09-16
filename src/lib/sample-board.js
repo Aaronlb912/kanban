@@ -1,6 +1,6 @@
 export const sampleBoard = {
   id: 'board-north-loop',
-  title: 'North Loop Photo',
+  title: 'DEMO BOARD North Loop Photo',
   note: 'Studio jobs this week. Names are fake.',
   columns: [
     {

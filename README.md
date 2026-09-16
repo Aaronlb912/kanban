@@ -11,8 +11,8 @@ Jobs on that page stay in your browser. Get the files if you want the
 board in your own app. To use the same boards on your laptop and phone,
 sign in on the Boards page.
 
-The demo starts on a photo studio board (North Loop Photo). Names are
-fake. Make a blank board for your own jobs.
+The demo starts on the board list. DEMO BOARD North Loop Photo is the
+sample. Names are fake. Open it, or make a blank board for your own jobs.
 
 ## Who it is for
 

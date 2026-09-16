@@ -15,7 +15,15 @@ function readStored() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return normalizeWorkspace(sampleWorkspace)
-    return normalizeWorkspace(JSON.parse(raw))
+    const next = normalizeWorkspace(JSON.parse(raw))
+    return {
+      ...next,
+      boards: next.boards.map((board) =>
+        board.id === 'board-north-loop' && board.title === 'North Loop Photo'
+          ? { ...board, title: 'DEMO BOARD North Loop Photo' }
+          : board,
+      ),
+    }
   } catch {
     return normalizeWorkspace(sampleWorkspace)
   }
