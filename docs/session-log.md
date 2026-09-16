@@ -51,3 +51,19 @@ Next session:
 - README Demo with github.com player
 - LinkedIn draft
 - Mark SHIPPED
+
+## 2026-09-16 — session 4 (expand A)
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+
+Landed:
+- Click a card to open an edit page
+- Body, owner, due, badges, checklist
+- Save, cancel (no save), blank title miss
+- Old JSON `note` loads as `body`
+- Sample jobs have real (fake) details
+
+Next session:
+- Expand B: preset column colors
+- Cards pick up the column color
+- Badges on compact cards

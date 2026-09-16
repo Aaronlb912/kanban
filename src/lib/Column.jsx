@@ -8,6 +8,7 @@ export function Column({
   onAddCard,
   onRemoveCard,
   onRemoveColumn,
+  onOpenCard,
   onDragStart,
   onDragOverCard,
   onDragOverColumn,
@@ -70,6 +71,7 @@ export function Column({
                   : ''
               }
               onRemove={(cardId) => onRemoveCard(column.id, cardId)}
+              onOpen={(cardId) => onOpenCard(column.id, cardId)}
               onDragStart={(event) => onDragStart(event, column.id, card.id)}
               onDragOver={(event) => onDragOverCard(event, column.id, index)}
               onDrop={(event) => onDropCard(event, column.id, index)}

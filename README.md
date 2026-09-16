@@ -16,15 +16,18 @@ Copy `src/lib/`. That folder is the component.
 
 - `Board.jsx` - the board
 - `Column.jsx` - one column, add a card
-- `Card.jsx` - one card
+- `Card.jsx` - compact card
+- `CardPage.jsx` - edit a card
 - `board.css` - the look
 - `board-json.js` - download, load parse, and move helpers
 - `sample-board.js` - North Loop Photo sample
 - `index.js` - the import
 
-No account. Nothing sends mail. Drag a card to another column, or up
-and down in the same column. Add or remove a column. An empty board is
-a real state. Load JSON for your jobs.
+No account. Nothing sends mail. Click a card to edit the job (details,
+owner, due date, badges, checklist). Drag a card to another column, or
+up and down in the same column. Add or remove a column. An empty board
+is a real state. Load JSON for your jobs. Old JSON with only `title`
+and `note` still loads; `note` becomes `body`.
 
 ## Run the demo
 
@@ -64,7 +67,15 @@ Board object:
     {
       "id": "intake",
       "title": "Intake",
-      "cards": [{ "id": "c-rae", "title": "Rae Chen, senior portraits", "note": "" }]
+      "cards": [{
+        "id": "c-rae",
+        "title": "Rae Chen, senior portraits",
+        "body": "Sitting on Saturday.",
+        "owner": "Mira Patel",
+        "due": "2026-09-19",
+        "badges": [{ "id": "b-rush", "label": "rush" }],
+        "checklist": [{ "id": "ch-1", "text": "Contract signed", "done": true }]
+      }]
     }
   ]
 }
@@ -76,4 +87,6 @@ stays on the page until a good file loads.
 ## Make it yours
 
 Change `value.title` and column titles. Add or remove columns on the
-page. Edit `src/lib/board.css`. Card objects are `{ id, title, note }`.
+page. Click a card to edit it. Edit `src/lib/board.css`. Card objects
+are `{ id, title, body, owner, due, badges, checklist }`. A `note`
+field still loads as `body`.

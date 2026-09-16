@@ -1,11 +1,14 @@
 import { useRef, useState } from 'react'
 import { Column } from './Column.jsx'
+import { CardPage } from './CardPage.jsx'
 import {
   downloadBoard,
+  findCard,
   moveCard,
-  newCardId,
   newColumnId,
+  normalizeCard,
   parseBoard,
+  updateCard,
 } from './board-json.js'
 import './board.css'
 
@@ -16,6 +19,8 @@ export function Board({ value, onChange }) {
   const [over, setOver] = useState(null)
   const [miss, setMiss] = useState('')
   const [columnName, setColumnName] = useState('')
+  const [view, setView] = useState({ name: 'board' })
+  const skipClick = useRef(false)
 
   function addCard(columnId, fields) {
     onChange({
@@ -26,11 +31,11 @@ export function Board({ value, onChange }) {
           ...column,
           cards: [
             ...column.cards,
-            {
-              id: newCardId(),
+            normalizeCard({
               title: fields.title,
+              body: fields.note || '',
               note: fields.note || '',
-            },
+            }),
           ],
         }
       }),
@@ -92,6 +97,7 @@ export function Board({ value, onChange }) {
     drag.current = null
     setDragId(null)
     setOver(null)
+    skipClick.current = true
   }
 
   function dropOnCard(event, columnId, cardIndex) {
@@ -157,6 +163,52 @@ export function Board({ value, onChange }) {
     reader.readAsText(file)
   }
 
+  function openCard(columnId, cardId) {
+    if (skipClick.current) {
+      skipClick.current = false
+      return
+    }
+    setView({ name: 'edit', columnId, cardId })
+  }
+
+  function saveCard(nextCard, nextColumnId) {
+    let board = updateCard(value, view.columnId, nextCard)
+    if (nextColumnId && nextColumnId !== view.columnId) {
+      const dest = board.columns.find((column) => column.id === nextColumnId)
+      const at = dest ? dest.cards.length : 0
+      board = moveCard(board, view.columnId, nextCard.id, nextColumnId, at)
+    }
+    onChange(board)
+    setView({ name: 'board' })
+    setMiss('')
+  }
+
+  function cancelEdit() {
+    setView({ name: 'board' })
+    setMiss('')
+  }
+
+  function removeOpenCard(cardId) {
+    removeCard(view.columnId, cardId)
+    setView({ name: 'board' })
+  }
+
+  const open =
+    view.name === 'edit' ? findCard(value, view.cardId) : null
+
+  if (view.name === 'edit' && open) {
+    return (
+      <CardPage
+        board={value}
+        columnId={open.column.id}
+        card={open.card}
+        onSave={saveCard}
+        onCancel={cancelEdit}
+        onRemove={removeOpenCard}
+      />
+    )
+  }
+
   return (
     <div className="kb">
       <header className="kb-top">
@@ -164,7 +216,7 @@ export function Board({ value, onChange }) {
           <p className="kb-kicker">Job board</p>
           <h1>{value.title}</h1>
           {value.note ? <p className="kb-note">{value.note}</p> : null}
-          <p className="kb-hint">Drag a card to move it. Load JSON for your jobs.</p>
+          <p className="kb-hint">Click a card to edit it. Drag to move it.</p>
         </div>
         <div className="kb-actions">
           <button type="button" onClick={() => downloadBoard(value)}>
@@ -196,6 +248,7 @@ export function Board({ value, onChange }) {
               onAddCard={addCard}
               onRemoveCard={removeCard}
               onRemoveColumn={removeColumn}
+              onOpenCard={openCard}
               onDragStart={startDrag}
               onDragOverCard={overCard}
               onDragOverColumn={overColumn}

@@ -1,4 +1,5 @@
 export const sampleBoard = {
+  id: 'board-north-loop',
   title: 'North Loop Photo',
   note: 'Studio jobs this week. Names are fake.',
   columns: [
@@ -9,12 +10,23 @@ export const sampleBoard = {
         {
           id: 'c-rae',
           title: 'Rae Chen, senior portraits',
-          note: 'Due Friday. Contact rae@example.com',
+          body: 'Sitting on Saturday. Contact rae@example.com',
+          owner: 'Mira Patel',
+          due: '2026-09-19',
+          badges: [{ id: 'b-rush', label: 'rush' }],
+          checklist: [
+            { id: 'ch-rae-1', text: 'Contract signed', done: true },
+            { id: 'ch-rae-2', text: 'Outfit list', done: false },
+          ],
         },
         {
           id: 'c-pat',
           title: 'Pat Ortiz, product set',
-          note: 'Oak Street Hardware. 12 SKUs.',
+          body: 'Oak Street Hardware. 12 SKUs on white.',
+          owner: 'Mira Patel',
+          due: '2026-09-22',
+          badges: [{ id: 'b-shop', label: 'shop' }],
+          checklist: [],
         },
       ],
     },
@@ -25,7 +37,14 @@ export const sampleBoard = {
         {
           id: 'c-dana',
           title: 'Dana Kim, wedding proof',
-          note: 'Gallery due Wednesday.',
+          body: 'Gallery due Wednesday. dana@example.com',
+          owner: 'Jules Nguyen',
+          due: '2026-09-17',
+          badges: [{ id: 'b-wedding', label: 'wedding' }],
+          checklist: [
+            { id: 'ch-dana-1', text: 'Color grade', done: true },
+            { id: 'ch-dana-2', text: 'Export proofs', done: false },
+          ],
         },
       ],
     },
@@ -36,7 +55,11 @@ export const sampleBoard = {
         {
           id: 'c-eli',
           title: 'Eli Vargas, class composites',
-          note: 'Paid. Front desk envelope.',
+          body: 'Paid. Front desk envelope.',
+          owner: 'Mira Patel',
+          due: '2026-09-16',
+          badges: [{ id: 'b-paid', label: 'paid' }],
+          checklist: [{ id: 'ch-eli-1', text: 'Print check', done: true }],
         },
       ],
     },

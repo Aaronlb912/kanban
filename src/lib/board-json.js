@@ -25,25 +25,87 @@ export function newColumnId() {
   return newId('col')
 }
 
-export function parseBoard(text) {
-  let data
-  try {
-    data = JSON.parse(text)
-  } catch {
-    return { ok: false, error: 'That file is not JSON.' }
-  }
+export function newBadgeId() {
+  return newId('b')
+}
 
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return { ok: false, error: 'That file is not a board.' }
+export function newCheckId() {
+  return newId('ch')
+}
+
+export function newBoardId() {
+  return newId('board')
+}
+
+export function normalizeCard(raw) {
+  const title = typeof raw.title === 'string' ? raw.title.trim() : ''
+  const note = typeof raw.note === 'string' ? raw.note : ''
+  const bodyRaw = typeof raw.body === 'string' ? raw.body : ''
+  const body = bodyRaw.trim() ? bodyRaw : note
+  const badges = Array.isArray(raw.badges)
+    ? raw.badges
+        .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+        .map((item) => ({
+          id: typeof item.id === 'string' && item.id ? item.id : newBadgeId(),
+          label: typeof item.label === 'string' ? item.label.trim() : '',
+        }))
+        .filter((item) => item.label)
+    : []
+  const checklist = Array.isArray(raw.checklist)
+    ? raw.checklist
+        .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+        .map((item) => ({
+          id: typeof item.id === 'string' && item.id ? item.id : newCheckId(),
+          text: typeof item.text === 'string' ? item.text.trim() : '',
+          done: Boolean(item.done),
+        }))
+        .filter((item) => item.text)
+    : []
+
+  return {
+    id: typeof raw.id === 'string' && raw.id ? raw.id : newCardId(),
+    title,
+    body,
+    note: body,
+    owner: typeof raw.owner === 'string' ? raw.owner : '',
+    due: typeof raw.due === 'string' ? raw.due : '',
+    badges,
+    checklist,
   }
+}
+
+export function normalizeBoard(raw) {
+  const title = typeof raw.title === 'string' ? raw.title.trim() : ''
+  const note = typeof raw.note === 'string' ? raw.note : ''
+  const columns = Array.isArray(raw.columns)
+    ? raw.columns
+        .filter((column) => column && typeof column === 'object' && !Array.isArray(column))
+        .map((column) => ({
+          id: typeof column.id === 'string' && column.id ? column.id : newColumnId(),
+          title: typeof column.title === 'string' ? column.title.trim() : '',
+          cards: Array.isArray(column.cards)
+            ? column.cards
+                .filter((card) => card && typeof card === 'object' && !Array.isArray(card))
+                .map((card) => normalizeCard(card))
+            : [],
+        }))
+        .filter((column) => column.title)
+    : []
+
+  return {
+    id: typeof raw.id === 'string' && raw.id ? raw.id : newBoardId(),
+    title: title || 'Board',
+    note,
+    columns,
+  }
+}
+
+function parseBoardObject(data) {
   if (!Array.isArray(data.columns)) {
     return { ok: false, error: 'That file is not a board.' }
   }
 
-  const title = typeof data.title === 'string' ? data.title.trim() : ''
-  const note = typeof data.note === 'string' ? data.note : ''
   const columns = []
-
   for (const raw of data.columns) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
       return { ok: false, error: 'A column in that file is not a column.' }
@@ -58,15 +120,11 @@ export function parseBoard(text) {
       if (!card || typeof card !== 'object' || Array.isArray(card)) {
         return { ok: false, error: 'A card in that file is not a card.' }
       }
-      const cardTitle = typeof card.title === 'string' ? card.title.trim() : ''
-      if (!cardTitle) {
+      const normalized = normalizeCard(card)
+      if (!normalized.title) {
         return { ok: false, error: 'A card needs a title.' }
       }
-      cards.push({
-        id: typeof card.id === 'string' && card.id ? card.id : newCardId(),
-        title: cardTitle,
-        note: typeof card.note === 'string' ? card.note : '',
-      })
+      cards.push(normalized)
     }
     columns.push({
       id: typeof raw.id === 'string' && raw.id ? raw.id : newColumnId(),
@@ -75,14 +133,63 @@ export function parseBoard(text) {
     })
   }
 
+  const title = typeof data.title === 'string' ? data.title.trim() : ''
+  const note = typeof data.note === 'string' ? data.note : ''
   return {
     ok: true,
     board: {
+      id: typeof data.id === 'string' && data.id ? data.id : newBoardId(),
       title: title || 'Board',
       note,
       columns,
     },
   }
+}
+
+export function parseBoard(text) {
+  let data
+  try {
+    data = JSON.parse(text)
+  } catch {
+    return { ok: false, error: 'That file is not JSON.' }
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, error: 'That file is not a board.' }
+  }
+
+  if (Array.isArray(data.boards)) {
+    const wanted = data.activeBoardId
+    const found =
+      data.boards.find((item) => item && item.id === wanted) || data.boards[0]
+    if (!found || typeof found !== 'object' || Array.isArray(found)) {
+      return { ok: false, error: 'That file is not a board.' }
+    }
+    return parseBoardObject(found)
+  }
+
+  return parseBoardObject(data)
+}
+
+export function updateCard(board, columnId, card) {
+  return {
+    ...board,
+    columns: board.columns.map((column) => {
+      if (column.id !== columnId) return column
+      return {
+        ...column,
+        cards: column.cards.map((item) => (item.id === card.id ? card : item)),
+      }
+    }),
+  }
+}
+
+export function findCard(board, cardId) {
+  for (const column of board.columns) {
+    const card = column.cards.find((item) => item.id === cardId)
+    if (card) return { column, card }
+  }
+  return null
 }
 
 export function moveCard(board, fromColumnId, cardId, toColumnId, toIndex) {
