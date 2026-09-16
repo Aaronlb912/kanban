@@ -68,3 +68,8 @@ export const sampleBoard = {
     },
   ],
 }
+
+export const sampleWorkspace = {
+  boards: [sampleBoard],
+  activeBoardId: sampleBoard.id,
+}

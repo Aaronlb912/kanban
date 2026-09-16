@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { Board, normalizeBoard, sampleBoard } from './lib/index.js'
+import { Workspace, normalizeWorkspace, sampleWorkspace } from './lib/index.js'
 
 export default function App() {
-  const [board, setBoard] = useState(() => normalizeBoard(sampleBoard))
+  const [workspace, setWorkspace] = useState(() =>
+    normalizeWorkspace(sampleWorkspace),
+  )
 
-  return <Board value={board} onChange={setBoard} />
+  return <Workspace value={workspace} onChange={setWorkspace} />
 }

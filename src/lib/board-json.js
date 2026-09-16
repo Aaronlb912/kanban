@@ -132,6 +132,65 @@ export function normalizeBoard(raw) {
   }
 }
 
+export function blankBoard(title) {
+  return normalizeBoard({
+    title,
+    note: '',
+    columns: [
+      { title: 'To do', color: COLUMN_COLORS[0].hex, cards: [] },
+      { title: 'In progress', color: COLUMN_COLORS[1].hex, cards: [] },
+      { title: 'Done', color: COLUMN_COLORS[3].hex, cards: [] },
+    ],
+  })
+}
+
+export function cloneBoard(board) {
+  const src = normalizeBoard(board)
+  return {
+    ...src,
+    id: newBoardId(),
+    title: `${src.title} copy`,
+    columns: src.columns.map((column) => ({
+      ...column,
+      id: newColumnId(),
+      cards: column.cards.map((card) => ({
+        ...card,
+        id: newCardId(),
+        badges: card.badges.map((badge) => ({ ...badge, id: newBadgeId() })),
+        checklist: card.checklist.map((item) => ({ ...item, id: newCheckId() })),
+      })),
+    })),
+  }
+}
+
+export function normalizeWorkspace(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    const board = blankBoard('Board')
+    return { boards: [board], activeBoardId: board.id }
+  }
+
+  let boards = []
+  if (Array.isArray(raw.boards)) {
+    boards = raw.boards
+      .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+      .map((item) => normalizeBoard(item))
+  } else if (Array.isArray(raw.columns)) {
+    boards = [normalizeBoard(raw)]
+  }
+
+  if (boards.length === 0) {
+    boards = [blankBoard('Board')]
+  }
+
+  const active =
+    boards.find((item) => item.id === raw.activeBoardId) || boards[0]
+  return { boards, activeBoardId: active.id }
+}
+
+export function cardCount(board) {
+  return (board.columns || []).reduce((n, column) => n + column.cards.length, 0)
+}
+
 function parseBoardObject(data) {
   if (!Array.isArray(data.columns)) {
     return { ok: false, error: 'That file is not a board.' }

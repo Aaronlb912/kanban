@@ -59,6 +59,7 @@
 .kb-top button,
 .kb-add button,
 .kb-add-column button,
+.kb-board-row button,
 .kb-card-remove {
   font-family: system-ui, sans-serif;
   font-size: 14px;
@@ -274,6 +275,34 @@
   min-width: 180px;
 }
 
+.kb-board-list {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  border-top: 1px solid #b7b09f;
+}
+
+.kb-board-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #b7b09f;
+}
+
+.kb-board-name {
+  margin: 0;
+  font-size: 18px;
+}
+
+.kb-board-meta {
+  margin: 4px 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: #4a574e;
+}
+
 .kb-page {
   max-width: 40rem;
 }
@@ -373,5 +402,10 @@
 
   .kb-column {
     min-height: 0;
+  }
+
+  .kb-board-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

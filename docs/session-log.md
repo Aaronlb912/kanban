@@ -98,3 +98,16 @@ Next session:
 - Expand D: board list
 - Blank template
 - Duplicate and remove a board
+
+## 2026-09-16 — session 7 (expand D)
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+
+Landed:
+- Board list. Open, duplicate, remove
+- New blank board: To do, In progress, Done, no cards
+- Miss on a blank board name, or removing the last board
+- North Loop Photo stays as the sample
+
+Next session:
+- Expand E: persist, search, rename, styling

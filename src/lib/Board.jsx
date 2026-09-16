@@ -13,7 +13,7 @@ import {
 } from './board-json.js'
 import './board.css'
 
-export function Board({ value, onChange }) {
+export function Board({ value, onChange, onBoards }) {
   const drag = useRef(null)
   const fileInput = useRef(null)
   const [dragId, setDragId] = useState(null)
@@ -245,6 +245,11 @@ export function Board({ value, onChange }) {
           <p className="kb-hint">Add card opens a page. Click a card to edit it. Drag to move it.</p>
         </div>
         <div className="kb-actions">
+          {onBoards ? (
+            <button type="button" className="kb-card-remove" onClick={onBoards}>
+              Boards
+            </button>
+          ) : null}
           <button type="button" onClick={openNew}>
             Add card
           </button>

@@ -8,11 +8,12 @@ Kind: board. Not a search. Not a table editor.
 Local URL: http://127.0.0.1:49218/
 
 Pages:
+- Board list: open, new blank, duplicate, remove.
 - Board: columns, cards, drag, one Add card, add or remove a column,
   load and download JSON.
 - New card: header Add card. Pick a column. Save.
 - Edit card: click a card. Body, owner, due, badges, checklist.
-  Hash or view state, not Next. Later: board list.
+  Hash or view state, not Next.
 
 Auth: none.
 
@@ -29,7 +30,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
       loads.
 - [x] Session 5 (expand B): column color, badges on compact cards.
 - [x] Session 6 (expand C): one Add card page.
-- [ ] Session 7 (expand D): many boards, blank template.
+- [x] Session 7 (expand D): many boards, blank template.
 - [ ] Session 8 (expand E): persist, search, rename, styling.
 - [ ] Session 9: screenshots, demo video, README Demo, LinkedIn draft,
       SHIPPED.
@@ -44,25 +45,25 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 3. Make it theirs? Yes. Board title, column names, card copy, CSS in
    `src/lib/board.css`.
 4. Take it? Yes. Copy `src/lib/` into their React `src/` and import
-   `Board`.
+   `Workspace` or `Board`.
 5. No account? Yes. No signup. No npm publish.
 6. Coworker test? Yes. Zip `src/lib/`. They drop it in and import.
 7. Keep a copy? Yes. Download JSON. The useful output is also the
    component running in their app with their jobs.
-8. Miss and recover? Yes. Blank card title. Blank column name. Bad
-   JSON. Empty board. Then add a column or a card, or load a good file.
+8. Miss and recover? Yes. Blank card title. Blank board title. Last
+   board. Blank column name. Bad JSON. Empty board. Then add a column
+   or a card, or load a good file.
 9. README says how? Partial until ship. Session 1: who, run, URL. Later:
    copy `src/lib/`, import, props, Demo stills and mp4.
 
 ## This session
 
-Session 6, expand C. One Add card in the header. New-card page with a
-column picker. Per-column add forms are gone.
+Session 7, expand D. Board list. Blank template. Duplicate. Remove a
+board. Sample stays as one board.
 
 ## Next session
 
-Expand D. Board list. Switch boards. Blank template. Duplicate.
-Remove a board. Sample stays as one board.
+Expand E. Persist, search, rename, styling.
 
 ## SHIPPED means
 
