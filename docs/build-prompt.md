@@ -59,20 +59,22 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 8. Miss and recover? Yes. Blank card title. Blank board title. Last
    board. Blank column name. Bad JSON. Empty board. Then add a column
    or a card, or load a good file.
-9. README says how? Partial until ship. Session 1: who, run, URL. Later:
-   copy `src/lib/`, import, props, Demo stills and mp4.
+9. README says how? Who, what, run, live URL, copy `src/lib/`, import,
+   props. Demo stills and mp4 wait for the ship session.
 
 ## This session
 
-Public GitHub Pages demo. Private gist save from the Boards page.
-Visitors stay on localStorage. Token stays in the browser.
+GitHub README in step with the running board: who, what, run, copy
+`src/lib/`, import, props, live URL, gist. Repo description and
+homepage point at Pages.
 
 ## Next session
 
 Open this repo and keep going. Do not paste a prompt.
 Session 9 ship only when he asks: screenshots, demo video, README Demo,
 LinkedIn draft, SHIPPED. Close-out, quiet controls, column drag, Pages,
-and gist already landed. Keep-it-open work stays on this board until then.
+gist, and README copy already landed. Keep-it-open work stays on this
+board until then.
 
 ## SHIPPED means
 

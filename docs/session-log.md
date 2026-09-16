@@ -128,3 +128,18 @@ Landed:
 
 Next session:
 - Screenshots, demo video, README Demo, LinkedIn, SHIPPED
+
+## 2026-09-16 — pages, gist, README
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+Live: https://aaronlb912.github.io/kanban/
+
+Landed:
+- Public Pages demo. Get the files on the Boards page.
+- Private gist save from the Boards page. Token stays in the browser.
+- README on GitHub: who, what, run, copy `src/lib/`, import, props,
+  live URL, gist, closed jobs in the JSON example.
+
+Next session:
+- Screenshots, demo video, README Demo, LinkedIn, SHIPPED only if he
+  asks.

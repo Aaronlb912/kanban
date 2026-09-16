@@ -4,12 +4,12 @@ Columns and cards for jobs that move. Keep more than one board. Add a
 card. Drag it. Close it out when it is done. Load and download JSON.
 Drop `src/lib/` into a React app you already have.
 
-Try the public demo:
+Try it:
 https://aaronlb912.github.io/kanban/
 
-Jobs on that page stay in your browser. Get the files from GitHub if
-you want the board in your own app. Connect a private gist on the
-Boards page if you want the same boards on your other devices.
+Jobs on that page stay in your browser. Get the files if you want the
+board in your own app. Connect a private gist on the Boards page if
+you want the same boards on your other devices.
 
 The demo starts on a photo studio board (North Loop Photo). Names are
 fake. Make a blank board for your own jobs.
@@ -31,7 +31,7 @@ Copy `src/lib/`. That folder is the component.
 - `board.css` - the look
 - `board-json.js` - download, load parse, blank template, and move
   helpers
-- `gist-store.js` - optional private gist save and load
+- `gist-store.js` - optional private gist save and load (demo only)
 - `sample-board.js` - North Loop Photo sample
 - `index.js` - the import
 
@@ -56,6 +56,8 @@ becomes Ink.
 
 Live: https://aaronlb912.github.io/kanban/
 
+Files: https://github.com/Aaronlb912/kanban
+
 On your machine:
 
 ```
@@ -65,11 +67,9 @@ npm start
 
 Open http://127.0.0.1:49218/
 
-Get the files: https://github.com/Aaronlb912/kanban
-
 ## Private copy
 
-The public demo is a try. To keep one set of boards on your laptop
+The public page is a try. To keep one set of boards on your laptop
 and phone, connect a private gist on the Boards page.
 
 1. GitHub → Settings → Developer settings → Personal access tokens.
@@ -81,8 +81,11 @@ The token stays in that browser. It is not in the repo.
 
 ## Use it in your own React app
 
-1. Copy `src/lib/` into your project.
-2. Import the workspace (several boards) or the board (one board):
+1. Copy the `src/lib/` folder into your project (for example
+   `src/lib/`).
+2. Import the workspace (several boards) or the board (one board).
+
+Several boards:
 
 ```jsx
 import { useState } from 'react'
@@ -94,7 +97,7 @@ export function Jobs() {
 }
 ```
 
-One board only:
+One board:
 
 ```jsx
 import { Board, sampleBoard } from './lib/index.js'
@@ -109,12 +112,34 @@ export function OneBoard() {
    sample, edit on the page, then Download this board or Download all
    boards. Load JSON brings a saved board or a whole workspace back.
 
-The demo (`src/App.jsx`) writes the workspace to `localStorage`. If you
-connect a gist, it also saves that JSON to GitHub. The `Workspace` /
-`Board` components only use `value` / `onChange`, so a host app can
-save however it wants.
+### Props
 
-Workspace object:
+`Workspace`
+
+- `value` - workspace object (`activeBoardId` plus `boards`)
+- `onChange` - function, called with the next workspace
+- `onResetSample` - optional. Shows Reset sample on the list
+- `cloud`, `cloudNote`, `cloudMiss`, `onConnectCloud`, `onPullCloud`,
+  `onForgetCloud` - optional. The demo uses these for the gist form.
+  A host app can omit them and save `value` itself.
+
+`Board`
+
+- `value` - one board object
+- `onChange` - function, called with the next board
+- `onBoards` - optional. Shows a Boards button
+- `onLoadWorkspace` - optional. Called when a loaded file is a whole
+  workspace
+- `onDownloadAll` - optional. Shows Download all boards
+- `copyKind` - optional. `"private"` labels the header Private copy.
+  Anything else is Public demo.
+
+The demo (`src/App.jsx`) writes the workspace to `localStorage`. If you
+connect a gist, it also saves that JSON to GitHub. `Workspace` and
+`Board` only use `value` / `onChange` for the board data, so a host
+app can save however it wants.
+
+## Board JSON
 
 ```json
 {
@@ -138,7 +163,17 @@ Workspace object:
           "checklist": [{ "id": "ch-1", "text": "Contract signed", "done": true }]
         }]
       }
-    ]
+    ],
+    "closed": [{
+      "id": "c-sam",
+      "title": "Sam Lee, passport photos",
+      "body": "Picked up last Tuesday.",
+      "owner": "Mira Patel",
+      "due": "2026-09-09",
+      "closedAt": "2026-09-09",
+      "fromColumnId": "ready",
+      "fromColumnTitle": "Ready for pickup"
+    }]
   }]
 }
 ```
