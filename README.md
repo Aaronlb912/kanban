@@ -18,11 +18,12 @@ Copy `src/lib/`. That folder is the component.
 - `Column.jsx` - one column, add a card
 - `Card.jsx` - one card
 - `board.css` - the look
-- `board-json.js` - download helper
+- `board-json.js` - download and move helpers
 - `sample-board.js` - North Loop Photo sample
 - `index.js` - the import
 
-No account. Nothing sends mail. Drag is not in this slice yet.
+No account. Nothing sends mail. Drag a card to another column, or up
+and down in the same column.
 
 ## Run the demo
 

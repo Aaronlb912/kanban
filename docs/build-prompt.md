@@ -8,7 +8,7 @@ Kind: board. Not a search. Not a table editor.
 Local URL: http://127.0.0.1:49218/
 
 Pages:
-- `/` the board, add a card, JSON download. Later: drag, JSON load.
+- `/` the board, add a card, drag, JSON download. Later: JSON load.
   No other routes.
 
 Auth: none.
@@ -19,7 +19,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 - [x] Session 1: scaffold, board with columns and cards, add a card,
       JSON download, demo running.
-- [ ] Session 2: drag cards between columns and reorder in a column.
+- [x] Session 2: drag cards between columns and reorder in a column.
 - [ ] Session 3: load JSON, miss states (blank title, bad file), add or
       remove a column, empty board.
 - [ ] Session 4: screenshots, demo video, README Demo, LinkedIn draft,
@@ -47,14 +47,13 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 ## This session
 
-Session 1. Vite React demo on 49218. `Board` shows three columns and
-sample jobs. Add a card to a column. Download JSON. Leave the demo
-running.
+Session 2. Drag a card to another column. Reorder inside a column.
+JSON download still has the board after a move.
 
 ## Next session
 
-Drag a card to another column. Reorder inside a column. Keep JSON
-download working after a move.
+Load JSON from a file. Miss on a bad file or blank title. Add or
+remove a column. Empty board is a real state.
 
 ## SHIPPED means
 

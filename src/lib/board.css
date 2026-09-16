@@ -35,6 +35,13 @@
   color: #4a574e;
 }
 
+.kb-hint {
+  margin: 8px 0 0;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: #4a574e;
+}
+
 .kb-top button,
 .kb-add button,
 .kb-card-remove {
@@ -66,6 +73,12 @@
   border: 1px solid #b7b09f;
   padding: 12px;
   min-height: 420px;
+  display: flex;
+  flex-direction: column;
+}
+
+.kb-column-over {
+  border-color: #2c3a32;
 }
 
 .kb-column-head {
@@ -93,6 +106,7 @@
   flex-direction: column;
   gap: 10px;
   min-height: 80px;
+  flex: 1;
 }
 
 .kb-empty {
@@ -106,6 +120,20 @@
   background: #fff8d6;
   border: 1px solid #d4c48a;
   padding: 10px;
+  cursor: grab;
+}
+
+.kb-dragging {
+  opacity: 0.45;
+}
+
+.kb-drop-before {
+  box-shadow: 0 -3px 0 #2c3a32;
+}
+
+.kb-drop-end {
+  height: 8px;
+  background: #2c3a32;
 }
 
 .kb-card-title {
