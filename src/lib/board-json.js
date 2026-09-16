@@ -144,6 +144,17 @@ export function blankBoard(title) {
   })
 }
 
+export function cloneCard(card) {
+  const src = normalizeCard(card)
+  return {
+    ...src,
+    id: newCardId(),
+    title: `${src.title} copy`,
+    badges: src.badges.map((badge) => ({ ...badge, id: newBadgeId() })),
+    checklist: src.checklist.map((item) => ({ ...item, id: newCheckId() })),
+  }
+}
+
 export function cloneBoard(board) {
   const src = normalizeBoard(board)
   return {
@@ -161,6 +172,57 @@ export function cloneBoard(board) {
       })),
     })),
   }
+}
+
+export function downloadWorkspace(workspace, filename = 'boards.json') {
+  downloadBoard(
+    {
+      activeBoardId: workspace.activeBoardId,
+      boards: workspace.boards,
+    },
+    filename,
+  )
+}
+
+export function cardMatches(card, query, badge) {
+  if (badge) {
+    const has = (card.badges || []).some((item) => item.label === badge)
+    if (!has) return false
+  }
+  const q = (query || '').trim().toLowerCase()
+  if (!q) return true
+  const parts = [
+    card.title,
+    card.body,
+    card.owner,
+    ...(card.badges || []).map((item) => item.label),
+  ]
+  return parts.join(' ').toLowerCase().includes(q)
+}
+
+export function boardBadges(board) {
+  const seen = new Set()
+  const labels = []
+  for (const column of board.columns || []) {
+    for (const card of column.cards || []) {
+      for (const badge of card.badges || []) {
+        if (!badge.label || seen.has(badge.label)) continue
+        seen.add(badge.label)
+        labels.push(badge.label)
+      }
+    }
+  }
+  return labels
+}
+
+export function moveColumn(board, columnId, dir) {
+  const index = board.columns.findIndex((column) => column.id === columnId)
+  const next = index + dir
+  if (index < 0 || next < 0 || next >= board.columns.length) return board
+  const columns = [...board.columns]
+  const [column] = columns.splice(index, 1)
+  columns.splice(next, 0, column)
+  return { ...board, columns }
 }
 
 export function normalizeWorkspace(raw) {
@@ -238,7 +300,7 @@ function parseBoardObject(data) {
   }
 }
 
-export function parseBoard(text) {
+export function parseFile(text) {
   let data
   try {
     data = JSON.parse(text)
@@ -251,16 +313,43 @@ export function parseBoard(text) {
   }
 
   if (Array.isArray(data.boards)) {
-    const wanted = data.activeBoardId
-    const found =
-      data.boards.find((item) => item && item.id === wanted) || data.boards[0]
-    if (!found || typeof found !== 'object' || Array.isArray(found)) {
-      return { ok: false, error: 'That file is not a board.' }
+    if (data.boards.length === 0) {
+      return { ok: false, error: 'That file has no boards.' }
     }
-    return parseBoardObject(found)
+    const boards = []
+    for (const item of data.boards) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        return { ok: false, error: 'That file is not a board.' }
+      }
+      const one = parseBoardObject(item)
+      if (!one.ok) return one
+      boards.push(one.board)
+    }
+    const active =
+      boards.find((item) => item.id === data.activeBoardId) || boards[0]
+    return {
+      ok: true,
+      kind: 'workspace',
+      workspace: { boards, activeBoardId: active.id },
+    }
   }
 
-  return parseBoardObject(data)
+  const one = parseBoardObject(data)
+  if (!one.ok) return one
+  return { ok: true, kind: 'board', board: one.board }
+}
+
+export function parseBoard(text) {
+  const parsed = parseFile(text)
+  if (!parsed.ok) return parsed
+  if (parsed.kind === 'workspace') {
+    const board =
+      parsed.workspace.boards.find(
+        (item) => item.id === parsed.workspace.activeBoardId,
+      ) || parsed.workspace.boards[0]
+    return { ok: true, board }
+  }
+  return { ok: true, board: parsed.board }
 }
 
 export function updateCard(board, columnId, card) {

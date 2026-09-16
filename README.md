@@ -29,14 +29,18 @@ Copy `src/lib/`. That folder is the component.
 
 No account. Nothing sends mail. Boards opens the list. A new board
 starts empty with To do, In progress, and Done. Duplicate a board.
-You cannot remove the last one. Add card in the header opens a page;
-pick the column there. Click a card to edit the job (details, owner,
-due date, badges, checklist). Badges show on the card. Each column has
-a color; cards in that column use it. Drag a card to another column, or
-up and down in the same column. Add or remove a column. An empty board
-is a real state. Load JSON for your jobs. Old JSON with only `title`
-and `note` still loads; `note` becomes `body`. Missing column color
-becomes Ink.
+You cannot remove the last one. The demo keeps boards after a refresh
+(Reset sample on the list if you want North Loop back). Add card in
+the header opens a page; pick the column there. Escape cancels.
+Search and badge filter find jobs. Rename the board or a column on
+the board. Move a column with Left / Right. Duplicate a card from
+edit. Click a card to edit the job (details, owner, due date, badges,
+checklist). Badges show on the card. Each column has a color; cards
+in that column use it. Drag a card to another column, or up and down
+in the same column. Add or remove a column. An empty board is a real
+state. Load JSON for one board or all boards. Download this board or
+all boards. Old JSON with only `title` and `note` still loads; `note`
+becomes `body`. Missing column color becomes Ink.
 
 ## Run the demo
 
@@ -74,8 +78,12 @@ export function OneBoard() {
 ```
 
 3. Replace `sampleWorkspace` with your boards. Or start from the
-   sample, edit on the page, then Download JSON. Load JSON brings a
-   saved board back into the open board.
+   sample, edit on the page, then Download this board or Download all
+   boards. Load JSON brings a saved board or a whole workspace back.
+
+The demo (`src/App.jsx`) writes the workspace to `localStorage`. The
+`Workspace` / `Board` components only use `value` / `onChange`, so a
+host app can save however it wants.
 
 Workspace object:
 
@@ -111,9 +119,10 @@ board stays until a good file loads.
 
 ## Make it yours
 
-Change board titles and column titles. Pick a column color (Ink, Ochre,
-Clay, Moss, Slate, Plum). Add or remove columns on the page. Click a
-card to edit it. Edit `src/lib/board.css`. Card objects are
+Change board titles and column titles on the page. Search jobs. Filter
+by badge. Pick a column color (Ink, Ochre, Clay, Moss, Slate, Plum).
+Add or remove columns. Click a card to edit it. Edit
+`src/lib/board.css`. Card objects are
 `{ id, title, body, owner, due, badges, checklist }`. A `note` field
 still loads as `body`. A blank board is To do / In progress / Done with
 no cards.

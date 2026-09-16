@@ -1,27 +1,42 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Column } from './Column.jsx'
 import { CardPage } from './CardPage.jsx'
 import {
+  boardBadges,
+  cardMatches,
+  cloneCard,
   downloadBoard,
   findCard,
   moveCard,
+  moveColumn,
   newColumnId,
   nextColumnColor,
   normalizeCard,
-  parseBoard,
+  parseFile,
   updateCard,
 } from './board-json.js'
 import './board.css'
 
-export function Board({ value, onChange, onBoards }) {
+export function Board({ value, onChange, onBoards, onLoadWorkspace, onDownloadAll }) {
   const drag = useRef(null)
   const fileInput = useRef(null)
   const [dragId, setDragId] = useState(null)
   const [over, setOver] = useState(null)
   const [miss, setMiss] = useState('')
   const [columnName, setColumnName] = useState('')
+  const [boardTitle, setBoardTitle] = useState(value.title)
+  const [query, setQuery] = useState('')
+  const [badge, setBadge] = useState('')
   const [view, setView] = useState({ name: 'board' })
   const skipClick = useRef(false)
+  const titleInput = useRef(null)
+
+  useEffect(() => {
+    setBoardTitle(value.title)
+  }, [value.title])
+
+  const filtering = Boolean(query.trim() || badge)
+  const badges = boardBadges(value)
 
   function removeCard(columnId, cardId) {
     onChange({
@@ -37,7 +52,7 @@ export function Board({ value, onChange, onBoards }) {
   }
 
   function startDrag(event, columnId, cardId) {
-    if (event.target.closest('button')) {
+    if (filtering || event.target.closest('button')) {
       event.preventDefault()
       return
     }
@@ -72,6 +87,7 @@ export function Board({ value, onChange, onBoards }) {
   function dropAt(event, columnId, index) {
     event.preventDefault()
     event.stopPropagation()
+    if (filtering) return
     const from = drag.current
     if (!from) return
     onChange(moveCard(value, from.columnId, from.cardId, columnId, index))
@@ -108,6 +124,26 @@ export function Board({ value, onChange, onBoards }) {
     })
   }
 
+  function renameColumn(columnId, title) {
+    const trimmed = title.trim()
+    if (!trimmed) {
+      setMiss('Need a column name.')
+      return
+    }
+    setMiss('')
+    onChange({
+      ...value,
+      columns: value.columns.map((column) => {
+        if (column.id !== columnId) return column
+        return { ...column, title: trimmed }
+      }),
+    })
+  }
+
+  function shiftColumn(columnId, dir) {
+    onChange(moveColumn(value, columnId, dir))
+  }
+
   function removeColumn(columnId) {
     setMiss('')
     onChange({
@@ -134,18 +170,37 @@ export function Board({ value, onChange, onBoards }) {
     })
   }
 
+  function saveBoardTitle(event) {
+    if (event && event.preventDefault) event.preventDefault()
+    const raw = titleInput.current ? titleInput.current.value : boardTitle
+    const trimmed = raw.trim()
+    if (!trimmed) {
+      setMiss('Need a board title.')
+      setBoardTitle(value.title)
+      return
+    }
+    setMiss('')
+    setBoardTitle(trimmed)
+    if (trimmed !== value.title) onChange({ ...value, title: trimmed })
+  }
+
   function loadFile(event) {
     const file = event.target.files && event.target.files[0]
     event.target.value = ''
     if (!file) return
     const reader = new FileReader()
     reader.onload = () => {
-      const parsed = parseBoard(String(reader.result || ''))
+      const parsed = parseFile(String(reader.result || ''))
       if (!parsed.ok) {
         setMiss(parsed.error)
         return
       }
       setMiss('')
+      if (parsed.kind === 'workspace') {
+        if (onLoadWorkspace) onLoadWorkspace(parsed.workspace)
+        else onChange(parsed.workspace.boards[0])
+        return
+      }
       onChange(parsed.board)
     }
     reader.onerror = () => {
@@ -205,6 +260,23 @@ export function Board({ value, onChange, onBoards }) {
     setView({ name: 'board' })
   }
 
+  function duplicateOpenCard() {
+    const found = findCard(value, view.cardId)
+    if (!found) return
+    const copy = cloneCard(found.card)
+    onChange({
+      ...value,
+      columns: value.columns.map((column) => {
+        if (column.id !== found.column.id) return column
+        const index = column.cards.findIndex((card) => card.id === found.card.id)
+        const cards = [...column.cards]
+        cards.splice(index + 1, 0, copy)
+        return { ...column, cards }
+      }),
+    })
+    setView({ name: 'edit', columnId: found.column.id, cardId: copy.id })
+  }
+
   const open =
     view.name === 'edit' ? findCard(value, view.cardId) : null
 
@@ -224,6 +296,7 @@ export function Board({ value, onChange, onBoards }) {
   if (view.name === 'edit' && open) {
     return (
       <CardPage
+        key={open.card.id}
         mode="edit"
         board={value}
         columnId={open.column.id}
@@ -231,6 +304,7 @@ export function Board({ value, onChange, onBoards }) {
         onSave={saveCard}
         onCancel={cancelEdit}
         onRemove={removeOpenCard}
+        onDuplicate={duplicateOpenCard}
       />
     )
   }
@@ -240,9 +314,28 @@ export function Board({ value, onChange, onBoards }) {
       <header className="kb-top">
         <div>
           <p className="kb-kicker">Job board</p>
-          <h1>{value.title}</h1>
+          <div className="kb-title-form">
+            <label>
+              Board name
+              <input
+                ref={titleInput}
+                className="kb-title-input"
+                value={boardTitle}
+                onChange={(event) => setBoardTitle(event.target.value)}
+                onBlur={saveBoardTitle}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    saveBoardTitle(event)
+                  }
+                }}
+              />
+            </label>
+          </div>
           {value.note ? <p className="kb-note">{value.note}</p> : null}
-          <p className="kb-hint">Add card opens a page. Click a card to edit it. Drag to move it.</p>
+          <p className="kb-hint">
+            Add card opens a page. Search finds jobs. Click a card to edit it.
+          </p>
         </div>
         <div className="kb-actions">
           {onBoards ? (
@@ -254,8 +347,13 @@ export function Board({ value, onChange, onBoards }) {
             Add card
           </button>
           <button type="button" onClick={() => downloadBoard(value)}>
-            Download JSON
+            Download this board
           </button>
+          {onDownloadAll ? (
+            <button type="button" onClick={onDownloadAll}>
+              Download all boards
+            </button>
+          ) : null}
           <button type="button" onClick={() => fileInput.current && fileInput.current.click()}>
             Load JSON
           </button>
@@ -268,29 +366,63 @@ export function Board({ value, onChange, onBoards }) {
           />
         </div>
       </header>
+      <div className="kb-tools">
+        <label>
+          Search
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Title, details, owner, badge"
+          />
+        </label>
+        {badges.length > 0 ? (
+          <label>
+            Badge
+            <select value={badge} onChange={(event) => setBadge(event.target.value)}>
+              <option value="">All badges</option>
+              {badges.map((label) => (
+                <option key={label} value={label}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+      </div>
       {miss ? <p className="kb-miss">{miss}</p> : null}
       {value.columns.length === 0 ? (
         <p className="kb-empty-board">No columns on this board. Add one to start.</p>
       ) : (
         <div className="kb-columns">
-          {value.columns.map((column) => (
-            <Column
-              key={column.id}
-              column={column}
-              dragId={dragId}
-              over={over}
-              onRemoveCard={removeCard}
-              onRemoveColumn={removeColumn}
-              onColor={setColumnColor}
-              onOpenCard={openCard}
-              onDragStart={startDrag}
-              onDragOverCard={overCard}
-              onDragOverColumn={overColumn}
-              onDropCard={dropOnCard}
-              onDropColumn={dropOnColumn}
-              onDragEnd={endDrag}
-            />
-          ))}
+          {value.columns.map((column, index) => {
+            const cards = filtering
+              ? column.cards.filter((card) => cardMatches(card, query, badge))
+              : column.cards
+            return (
+              <Column
+                key={column.id}
+                column={column}
+                cards={cards}
+                filtering={filtering}
+                dragId={dragId}
+                over={over}
+                canMoveLeft={index > 0}
+                canMoveRight={index < value.columns.length - 1}
+                onRemoveCard={removeCard}
+                onRemoveColumn={removeColumn}
+                onRename={renameColumn}
+                onMove={shiftColumn}
+                onColor={setColumnColor}
+                onOpenCard={openCard}
+                onDragStart={startDrag}
+                onDragOverCard={overCard}
+                onDragOverColumn={overColumn}
+                onDropCard={dropOnCard}
+                onDropColumn={dropOnColumn}
+                onDragEnd={endDrag}
+              />
+            )
+          })}
         </div>
       )}
       <form className="kb-add-column" onSubmit={addColumn}>

@@ -2,6 +2,7 @@ export function Card({
   card,
   dragging,
   dropLine,
+  lockDrag,
   onOpen,
   onRemove,
   onDragStart,
@@ -29,7 +30,7 @@ export function Card({
   return (
     <article
       className={className}
-      draggable
+      draggable={!lockDrag}
       onClick={open}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
@@ -37,9 +38,6 @@ export function Card({
       onDragEnd={onDragEnd}
     >
       <h3 className="kb-card-title">{card.title}</h3>
-      {body ? <p className="kb-card-note">{body}</p> : null}
-      {card.owner ? <p className="kb-card-meta">{card.owner}</p> : null}
-      {card.due ? <p className="kb-card-meta">Due {card.due}</p> : null}
       {card.badges && card.badges.length > 0 ? (
         <ul className="kb-card-badges">
           {card.badges.map((badge) => (
@@ -47,9 +45,12 @@ export function Card({
           ))}
         </ul>
       ) : null}
+      {body ? <p className="kb-card-note">{body}</p> : null}
+      {card.due ? <p className="kb-card-due">Due {card.due}</p> : null}
+      {card.owner ? <p className="kb-card-meta">{card.owner}</p> : null}
       {total > 0 ? (
         <p className="kb-card-meta">
-          {done}/{total}
+          {done} / {total}
         </p>
       ) : null}
       <button

@@ -111,3 +111,20 @@ Landed:
 
 Next session:
 - Expand E: persist, search, rename, styling
+
+## 2026-09-16 — session 8 (expand E)
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+
+Landed:
+- Demo saves the workspace in localStorage. Refresh keeps boards.
+- Reset sample on the board list (asks first)
+- Search and badge filter on the open board
+- Rename the board and a column
+- Move a column left or right
+- Duplicate a card from the edit page
+- Escape cancels new/edit
+- Download this board or all boards. Load JSON can be one board or all.
+
+Next session:
+- Screenshots, demo video, README Demo, LinkedIn, SHIPPED

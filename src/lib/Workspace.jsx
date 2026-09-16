@@ -4,10 +4,11 @@ import {
   blankBoard,
   cardCount,
   cloneBoard,
+  downloadWorkspace,
   normalizeWorkspace,
 } from './board-json.js'
 
-export function Workspace({ value, onChange }) {
+export function Workspace({ value, onChange, onResetSample }) {
   const workspace = normalizeWorkspace(value)
   const [page, setPage] = useState('board')
   const [title, setTitle] = useState('')
@@ -83,6 +84,11 @@ export function Workspace({ value, onChange }) {
           setMiss('')
           setPage('list')
         }}
+        onLoadWorkspace={(next) => {
+          setWorkspace(normalizeWorkspace(next))
+          setPage('board')
+        }}
+        onDownloadAll={() => downloadWorkspace(workspace)}
       />
     )
   }
@@ -97,6 +103,16 @@ export function Workspace({ value, onChange }) {
             Open a board to work it. North Loop Photo is the sample. A new
             board starts empty: To do, In progress, Done.
           </p>
+        </div>
+        <div className="kb-actions">
+          <button type="button" onClick={() => downloadWorkspace(workspace)}>
+            Download all boards
+          </button>
+          {onResetSample ? (
+            <button type="button" className="kb-card-remove" onClick={onResetSample}>
+              Reset sample
+            </button>
+          ) : null}
         </div>
       </header>
       {miss ? <p className="kb-miss">{miss}</p> : null}

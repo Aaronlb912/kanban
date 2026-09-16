@@ -5,10 +5,13 @@ export {
   COLUMN_COLORS,
   blankBoard,
   cloneBoard,
+  cloneCard,
   downloadBoard,
+  downloadWorkspace,
   moveCard,
   normalizeBoard,
   normalizeCard,
   normalizeWorkspace,
   parseBoard,
+  parseFile,
 } from './board-json.js'

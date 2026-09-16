@@ -8,12 +8,13 @@ Kind: board. Not a search. Not a table editor.
 Local URL: http://127.0.0.1:49218/
 
 Pages:
-- Board list: open, new blank, duplicate, remove.
-- Board: columns, cards, drag, one Add card, add or remove a column,
-  load and download JSON.
-- New card: header Add card. Pick a column. Save.
+- Board list: open, new blank, duplicate, remove. Reset sample.
+- Board: columns, cards, drag, search, badge filter, rename, reorder
+  columns, one Add card, add or remove a column, load and download
+  JSON (this board or all boards).
+- New card: header Add card. Pick a column. Save. Escape cancels.
 - Edit card: click a card. Body, owner, due, badges, checklist.
-  Hash or view state, not Next.
+  Duplicate. Hash or view state, not Next.
 
 Auth: none.
 
@@ -31,7 +32,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 - [x] Session 5 (expand B): column color, badges on compact cards.
 - [x] Session 6 (expand C): one Add card page.
 - [x] Session 7 (expand D): many boards, blank template.
-- [ ] Session 8 (expand E): persist, search, rename, styling.
+- [x] Session 8 (expand E): persist, search, rename, styling.
 - [ ] Session 9: screenshots, demo video, README Demo, LinkedIn draft,
       SHIPPED.
 
@@ -58,12 +59,13 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 ## This session
 
-Session 7, expand D. Board list. Blank template. Duplicate. Remove a
-board. Sample stays as one board.
+Session 8, expand E. Persist. Search. Rename. Styling. JSON for one
+board and all boards.
 
 ## Next session
 
-Expand E. Persist, search, rename, styling.
+Session 9 ship: screenshots, demo video, README Demo, LinkedIn draft,
+SHIPPED.
 
 ## SHIPPED means
 

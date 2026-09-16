@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { newBadgeId, newCheckId, normalizeCard } from './board-json.js'
 
 export function CardPage({
@@ -9,6 +9,7 @@ export function CardPage({
   onSave,
   onCancel,
   onRemove,
+  onDuplicate,
 }) {
   const isNew = mode === 'new'
   const [title, setTitle] = useState(card.title)
@@ -21,6 +22,14 @@ export function CardPage({
   const [checkText, setCheckText] = useState('')
   const [nextColumnId, setNextColumnId] = useState(columnId)
   const [miss, setMiss] = useState('')
+
+  useEffect(() => {
+    function onKey(event) {
+      if (event.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onCancel])
 
   function addBadge(event) {
     event.preventDefault()
@@ -81,8 +90,8 @@ export function CardPage({
       <h1>{isNew ? 'New card' : card.title}</h1>
       <p className="kb-hint">
         {isNew
-          ? 'Fill the job, pick a column, then save.'
-          : 'Change the job, then save. Cancel leaves the board as it was.'}
+          ? 'Fill the job, pick a column, then save. Escape goes back.'
+          : 'Change the job, then save. Cancel or Escape leaves the board as it was.'}
       </p>
       {miss ? <p className="kb-miss">{miss}</p> : null}
       <form className="kb-card-form" onSubmit={save}>
@@ -98,22 +107,24 @@ export function CardPage({
             onChange={(event) => setBody(event.target.value)}
           />
         </label>
-        <label>
-          Owner
-          <input
-            value={owner}
-            onChange={(event) => setOwner(event.target.value)}
-            placeholder="Who has it"
-          />
-        </label>
-        <label>
-          Due
-          <input
-            type="date"
-            value={due}
-            onChange={(event) => setDue(event.target.value)}
-          />
-        </label>
+        <div className="kb-card-form-row">
+          <label>
+            Owner
+            <input
+              value={owner}
+              onChange={(event) => setOwner(event.target.value)}
+              placeholder="Who has it"
+            />
+          </label>
+          <label>
+            Due
+            <input
+              type="date"
+              value={due}
+              onChange={(event) => setDue(event.target.value)}
+            />
+          </label>
+        </div>
         <label>
           Column
           <select
@@ -215,6 +226,11 @@ export function CardPage({
           <button type="button" className="kb-card-remove" onClick={onCancel}>
             Cancel
           </button>
+          {isNew ? null : (
+            <button type="button" className="kb-card-remove" onClick={onDuplicate}>
+              Duplicate card
+            </button>
+          )}
           {isNew ? null : (
             <button type="button" className="kb-card-remove" onClick={() => onRemove(card.id)}>
               Remove card
