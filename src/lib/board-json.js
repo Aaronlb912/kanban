@@ -10,11 +10,79 @@ export function downloadBoard(board, filename = 'board.json') {
   URL.revokeObjectURL(url)
 }
 
-export function newCardId() {
+function newId(prefix) {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID()
+    return `${prefix}-${crypto.randomUUID()}`
   }
-  return `c-${Date.now()}`
+  return `${prefix}-${Date.now()}`
+}
+
+export function newCardId() {
+  return newId('c')
+}
+
+export function newColumnId() {
+  return newId('col')
+}
+
+export function parseBoard(text) {
+  let data
+  try {
+    data = JSON.parse(text)
+  } catch {
+    return { ok: false, error: 'That file is not JSON.' }
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, error: 'That file is not a board.' }
+  }
+  if (!Array.isArray(data.columns)) {
+    return { ok: false, error: 'That file is not a board.' }
+  }
+
+  const title = typeof data.title === 'string' ? data.title.trim() : ''
+  const note = typeof data.note === 'string' ? data.note : ''
+  const columns = []
+
+  for (const raw of data.columns) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return { ok: false, error: 'A column in that file is not a column.' }
+    }
+    const colTitle = typeof raw.title === 'string' ? raw.title.trim() : ''
+    if (!colTitle) {
+      return { ok: false, error: 'A column needs a name.' }
+    }
+    const cardsRaw = Array.isArray(raw.cards) ? raw.cards : []
+    const cards = []
+    for (const card of cardsRaw) {
+      if (!card || typeof card !== 'object' || Array.isArray(card)) {
+        return { ok: false, error: 'A card in that file is not a card.' }
+      }
+      const cardTitle = typeof card.title === 'string' ? card.title.trim() : ''
+      if (!cardTitle) {
+        return { ok: false, error: 'A card needs a title.' }
+      }
+      cards.push({
+        id: typeof card.id === 'string' && card.id ? card.id : newCardId(),
+        title: cardTitle,
+        note: typeof card.note === 'string' ? card.note : '',
+      })
+    }
+    columns.push({
+      id: typeof raw.id === 'string' && raw.id ? raw.id : newColumnId(),
+      title: colTitle,
+      cards,
+    })
+  }
+
+  return {
+    ok: true,
+    board: {
+      title: title || 'Board',
+      note,
+      columns,
+    },
+  }
 }
 
 export function moveCard(board, fromColumnId, cardId, toColumnId, toIndex) {

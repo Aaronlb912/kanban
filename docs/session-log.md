@@ -33,3 +33,21 @@ Next session:
 - Miss on a bad file or blank title
 - Add or remove a column
 - Empty board is a real state
+
+## 2026-09-16 — session 3
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+
+Landed:
+- Load JSON from a file
+- Miss on a file that is not JSON, or not a board
+- Add a column. Blank name is a miss
+- Remove a column
+- Empty board copy, then add a column to recover
+
+Next session:
+- Screenshots (page, result, miss)
+- Demo video
+- README Demo with github.com player
+- LinkedIn draft
+- Mark SHIPPED

@@ -7,6 +7,7 @@ export function Column({
   over,
   onAddCard,
   onRemoveCard,
+  onRemoveColumn,
   onDragStart,
   onDragOverCard,
   onDragOverColumn,
@@ -42,6 +43,13 @@ export function Column({
       <header className="kb-column-head">
         <h2 id={`col-${column.id}`}>{column.title}</h2>
         <span className="kb-count">{column.cards.length}</span>
+        <button
+          type="button"
+          className="kb-card-remove"
+          onClick={() => onRemoveColumn(column.id)}
+        >
+          Remove column
+        </button>
       </header>
       <div
         className="kb-cards"

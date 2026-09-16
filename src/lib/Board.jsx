@@ -1,12 +1,21 @@
 import { useRef, useState } from 'react'
 import { Column } from './Column.jsx'
-import { downloadBoard, moveCard, newCardId } from './board-json.js'
+import {
+  downloadBoard,
+  moveCard,
+  newCardId,
+  newColumnId,
+  parseBoard,
+} from './board-json.js'
 import './board.css'
 
 export function Board({ value, onChange }) {
   const drag = useRef(null)
+  const fileInput = useRef(null)
   const [dragId, setDragId] = useState(null)
   const [over, setOver] = useState(null)
+  const [miss, setMiss] = useState('')
+  const [columnName, setColumnName] = useState('')
 
   function addCard(columnId, fields) {
     onChange({
@@ -102,6 +111,52 @@ export function Board({ value, onChange }) {
     setOver(null)
   }
 
+  function removeColumn(columnId) {
+    setMiss('')
+    onChange({
+      ...value,
+      columns: value.columns.filter((column) => column.id !== columnId),
+    })
+  }
+
+  function addColumn(event) {
+    event.preventDefault()
+    const trimmed = columnName.trim()
+    if (!trimmed) {
+      setMiss('Need a column name.')
+      return
+    }
+    setMiss('')
+    setColumnName('')
+    onChange({
+      ...value,
+      columns: [
+        ...value.columns,
+        { id: newColumnId(), title: trimmed, cards: [] },
+      ],
+    })
+  }
+
+  function loadFile(event) {
+    const file = event.target.files && event.target.files[0]
+    event.target.value = ''
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const parsed = parseBoard(String(reader.result || ''))
+      if (!parsed.ok) {
+        setMiss(parsed.error)
+        return
+      }
+      setMiss('')
+      onChange(parsed.board)
+    }
+    reader.onerror = () => {
+      setMiss('Could not read that file.')
+    }
+    reader.readAsText(file)
+  }
+
   return (
     <div className="kb">
       <header className="kb-top">
@@ -109,30 +164,59 @@ export function Board({ value, onChange }) {
           <p className="kb-kicker">Job board</p>
           <h1>{value.title}</h1>
           {value.note ? <p className="kb-note">{value.note}</p> : null}
-          <p className="kb-hint">Drag a card to move it.</p>
+          <p className="kb-hint">Drag a card to move it. Load JSON for your jobs.</p>
         </div>
-        <button type="button" onClick={() => downloadBoard(value)}>
-          Download JSON
-        </button>
-      </header>
-      <div className="kb-columns">
-        {value.columns.map((column) => (
-          <Column
-            key={column.id}
-            column={column}
-            dragId={dragId}
-            over={over}
-            onAddCard={addCard}
-            onRemoveCard={removeCard}
-            onDragStart={startDrag}
-            onDragOverCard={overCard}
-            onDragOverColumn={overColumn}
-            onDropCard={dropOnCard}
-            onDropColumn={dropOnColumn}
-            onDragEnd={endDrag}
+        <div className="kb-actions">
+          <button type="button" onClick={() => downloadBoard(value)}>
+            Download JSON
+          </button>
+          <button type="button" onClick={() => fileInput.current && fileInput.current.click()}>
+            Load JSON
+          </button>
+          <input
+            ref={fileInput}
+            className="kb-file"
+            type="file"
+            accept="application/json,.json"
+            onChange={loadFile}
           />
-        ))}
-      </div>
+        </div>
+      </header>
+      {miss ? <p className="kb-miss">{miss}</p> : null}
+      {value.columns.length === 0 ? (
+        <p className="kb-empty-board">No columns on this board. Add one to start.</p>
+      ) : (
+        <div className="kb-columns">
+          {value.columns.map((column) => (
+            <Column
+              key={column.id}
+              column={column}
+              dragId={dragId}
+              over={over}
+              onAddCard={addCard}
+              onRemoveCard={removeCard}
+              onRemoveColumn={removeColumn}
+              onDragStart={startDrag}
+              onDragOverCard={overCard}
+              onDragOverColumn={overColumn}
+              onDropCard={dropOnCard}
+              onDropColumn={dropOnColumn}
+              onDragEnd={endDrag}
+            />
+          ))}
+        </div>
+      )}
+      <form className="kb-add-column" onSubmit={addColumn}>
+        <label>
+          Column
+          <input
+            value={columnName}
+            onChange={(event) => setColumnName(event.target.value)}
+            placeholder="On hold"
+          />
+        </label>
+        <button type="submit">Add column</button>
+      </form>
     </div>
   )
 }

@@ -8,7 +8,8 @@ Kind: board. Not a search. Not a table editor.
 Local URL: http://127.0.0.1:49218/
 
 Pages:
-- `/` the board, add a card, drag, JSON download. Later: JSON load.
+- `/` the board, add a card, drag, add or remove a column, load and
+  download JSON.
   No other routes.
 
 Auth: none.
@@ -20,7 +21,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 - [x] Session 1: scaffold, board with columns and cards, add a card,
       JSON download, demo running.
 - [x] Session 2: drag cards between columns and reorder in a column.
-- [ ] Session 3: load JSON, miss states (blank title, bad file), add or
+- [x] Session 3: load JSON, miss states (blank title, bad file), add or
       remove a column, empty board.
 - [ ] Session 4: screenshots, demo video, README Demo, LinkedIn draft,
       SHIPPED.
@@ -40,20 +41,19 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 6. Coworker test? Yes. Zip `src/lib/`. They drop it in and import.
 7. Keep a copy? Yes. Download JSON. The useful output is also the
    component running in their app with their jobs.
-8. Miss and recover? Yes (session 3). Blank card title. Bad JSON. Empty
-   board. Then add a real card.
+8. Miss and recover? Yes. Blank card title. Blank column name. Bad
+   JSON. Empty board. Then add a column or a card, or load a good file.
 9. README says how? Partial until ship. Session 1: who, run, URL. Later:
    copy `src/lib/`, import, props, Demo stills and mp4.
 
 ## This session
 
-Session 2. Drag a card to another column. Reorder inside a column.
-JSON download still has the board after a move.
+Session 3. Load JSON from a file. Miss on a bad file or a blank
+column name. Add or remove a column. Empty board is a real state.
 
 ## Next session
 
-Load JSON from a file. Miss on a bad file or blank title. Add or
-remove a column. Empty board is a real state.
+Screenshots, demo video, README Demo, LinkedIn draft, mark SHIPPED.
 
 ## SHIPPED means
 

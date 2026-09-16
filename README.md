@@ -1,7 +1,7 @@
 # Kanban board
 
-Columns and cards for jobs that move. Add a card. Download JSON. Drop
-`src/lib/` into a React app you already have.
+Columns and cards for jobs that move. Add a card. Drag it. Load and
+download JSON. Drop `src/lib/` into a React app you already have.
 
 The demo is a photo studio board (North Loop Photo). Names are fake.
 
@@ -18,12 +18,13 @@ Copy `src/lib/`. That folder is the component.
 - `Column.jsx` - one column, add a card
 - `Card.jsx` - one card
 - `board.css` - the look
-- `board-json.js` - download and move helpers
+- `board-json.js` - download, load parse, and move helpers
 - `sample-board.js` - North Loop Photo sample
 - `index.js` - the import
 
 No account. Nothing sends mail. Drag a card to another column, or up
-and down in the same column.
+and down in the same column. Add or remove a column. An empty board is
+a real state. Load JSON for your jobs.
 
 ## Run the demo
 
@@ -50,9 +51,29 @@ export function Jobs() {
 ```
 
 3. Replace `sampleBoard` with your title, columns, and cards. Or start
-   from the sample and edit the jobs on the page, then Download JSON.
+   from the sample, edit on the page, then Download JSON. Load JSON
+   brings a saved board back.
+
+Board object:
+
+```json
+{
+  "title": "North Loop Photo",
+  "note": "Studio jobs this week.",
+  "columns": [
+    {
+      "id": "intake",
+      "title": "Intake",
+      "cards": [{ "id": "c-rae", "title": "Rae Chen, senior portraits", "note": "" }]
+    }
+  ]
+}
+```
+
+A file that is not JSON, or not a board, shows an error. The sample
+stays on the page until a good file loads.
 
 ## Make it yours
 
-Change `value.title` and column titles. Edit `src/lib/board.css`. Card
-objects are `{ id, title, note }`.
+Change `value.title` and column titles. Add or remove columns on the
+page. Edit `src/lib/board.css`. Card objects are `{ id, title, note }`.
