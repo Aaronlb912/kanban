@@ -67,6 +67,20 @@ npm start
 
 Open http://127.0.0.1:49218/
 
+## Demo
+
+![North Loop Photo jobs in columns.](docs/media/kanban-page.png)
+
+![Search for Rae. The other columns go quiet.](docs/media/kanban-result.png)
+
+![Save with no title. Need a job title.](docs/media/kanban-miss.png)
+
+https://github.com/user-attachments/assets/33dfbf07-7748-46e3-8a84-fd586158bc0e
+
+Repo copy: [docs/media/kanban-demo.mp4](docs/media/kanban-demo.mp4)
+
+Voice is Microsoft Andrew Neural. Music is Wallpaper by Kevin MacLeod (incompetech.com), CC BY 3.0.
+
 ## Private copy
 
 The public page is a try. Boards stay in that browser until you save

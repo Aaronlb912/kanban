@@ -143,3 +143,16 @@ Landed:
 Next session:
 - Screenshots, demo video, README Demo, LinkedIn, SHIPPED only if he
   asks.
+
+## 2026-09-16 — session 9 SHIPPED
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+Live: https://aaronlb912.github.io/kanban/
+
+Landed:
+- docs/media/kanban-page.png, kanban-result.png, kanban-miss.png
+- docs/media/kanban-demo.mp4 in the README Demo with a github.com
+  player
+- LinkedIn draft at docs/linkedin-post.md (local, not committed)
+
+SHIPPED.

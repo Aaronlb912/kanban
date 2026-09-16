@@ -38,7 +38,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 - [x] Session 6 (expand C): one Add card page.
 - [x] Session 7 (expand D): many boards, blank template.
 - [x] Session 8 (expand E): persist, search, rename, styling.
-- [ ] Session 9: screenshots, demo video, README Demo, LinkedIn draft,
+- [x] Session 9: screenshots, demo video, README Demo, LinkedIn draft,
       SHIPPED.
 
 ## Usefulness check
@@ -60,21 +60,16 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
    board. Blank column name. Bad JSON. Empty board. Then add a column
    or a card, or load a good file.
 9. README says how? Who, what, run, live URL, copy `src/lib/`, import,
-   props. Demo stills and mp4 wait for the ship session.
+   props. Demo stills and github.com player are in the README.
 
 ## This session
 
-GitHub README in step with the running board: who, what, run, copy
-`src/lib/`, import, props, live URL, gist. Repo description and
-homepage point at Pages.
+README Demo: three tool stills, walkthrough mp4, github.com player.
+LinkedIn draft on disk, not committed.
 
 ## Next session
 
-Open this repo and keep going. Do not paste a prompt.
-Session 9 ship only when he asks: screenshots, demo video, README Demo,
-LinkedIn draft, SHIPPED. Close-out, quiet controls, column drag, Pages,
-gist, and README copy already landed. Keep-it-open work stays on this
-board until then.
+SHIPPED. Do not start a second product in this repo.
 
 ## SHIPPED means
 
