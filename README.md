@@ -15,21 +15,22 @@ board on a page. Put your columns and jobs in. Save the JSON.
 Copy `src/lib/`. That folder is the component.
 
 - `Board.jsx` - the board
-- `Column.jsx` - one column, add a card
+- `Column.jsx` - one column
 - `Card.jsx` - compact card
-- `CardPage.jsx` - edit a card
+- `CardPage.jsx` - new card and edit card
 - `board.css` - the look
 - `board-json.js` - download, load parse, and move helpers
 - `sample-board.js` - North Loop Photo sample
 - `index.js` - the import
 
-No account. Nothing sends mail. Click a card to edit the job (details,
-owner, due date, badges, checklist). Badges show on the card. Each
-column has a color; cards in that column use it. Drag a card to another
-column, or up and down in the same column. Add or remove a column. An
-empty board is a real state. Load JSON for your jobs. Old JSON with
-only `title` and `note` still loads; `note` becomes `body`. Missing
-column color becomes Ink.
+No account. Nothing sends mail. Add card in the header opens a page;
+pick the column there. Click a card to edit the job (details, owner,
+due date, badges, checklist). Badges show on the card. Each column has
+a color; cards in that column use it. Drag a card to another column, or
+up and down in the same column. Add or remove a column. An empty board
+is a real state. Load JSON for your jobs. Old JSON with only `title`
+and `note` still loads; `note` becomes `body`. Missing column color
+becomes Ink.
 
 ## Run the demo
 

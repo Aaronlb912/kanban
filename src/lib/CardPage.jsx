@@ -1,7 +1,16 @@
 import { useState } from 'react'
 import { newBadgeId, newCheckId, normalizeCard } from './board-json.js'
 
-export function CardPage({ board, columnId, card, onSave, onCancel, onRemove }) {
+export function CardPage({
+  board,
+  columnId,
+  card,
+  mode,
+  onSave,
+  onCancel,
+  onRemove,
+}) {
+  const isNew = mode === 'new'
   const [title, setTitle] = useState(card.title)
   const [body, setBody] = useState(card.body || '')
   const [owner, setOwner] = useState(card.owner || '')
@@ -44,6 +53,14 @@ export function CardPage({ board, columnId, card, onSave, onCancel, onRemove }) 
       setMiss('Need a job title.')
       return
     }
+    if (board.columns.length === 0) {
+      setMiss('Add a column first.')
+      return
+    }
+    if (!nextColumnId) {
+      setMiss('Pick a column.')
+      return
+    }
     onSave(
       normalizeCard({
         ...card,
@@ -60,9 +77,13 @@ export function CardPage({ board, columnId, card, onSave, onCancel, onRemove }) 
 
   return (
     <div className="kb kb-page">
-      <p className="kb-kicker">Edit card</p>
-      <h1>{card.title}</h1>
-      <p className="kb-hint">Change the job, then save. Cancel leaves the board as it was.</p>
+      <p className="kb-kicker">{isNew ? 'Add card' : 'Edit card'}</p>
+      <h1>{isNew ? 'New card' : card.title}</h1>
+      <p className="kb-hint">
+        {isNew
+          ? 'Fill the job, pick a column, then save.'
+          : 'Change the job, then save. Cancel leaves the board as it was.'}
+      </p>
       {miss ? <p className="kb-miss">{miss}</p> : null}
       <form className="kb-card-form" onSubmit={save}>
         <label>
@@ -194,9 +215,11 @@ export function CardPage({ board, columnId, card, onSave, onCancel, onRemove }) 
           <button type="button" className="kb-card-remove" onClick={onCancel}>
             Cancel
           </button>
-          <button type="button" className="kb-card-remove" onClick={() => onRemove(card.id)}>
-            Remove card
-          </button>
+          {isNew ? null : (
+            <button type="button" className="kb-card-remove" onClick={() => onRemove(card.id)}>
+              Remove card
+            </button>
+          )}
         </div>
       </form>
     </div>

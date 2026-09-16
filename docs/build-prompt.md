@@ -8,10 +8,11 @@ Kind: board. Not a search. Not a table editor.
 Local URL: http://127.0.0.1:49218/
 
 Pages:
-- Board: columns, cards, drag, add or remove a column, load and
-  download JSON.
+- Board: columns, cards, drag, one Add card, add or remove a column,
+  load and download JSON.
+- New card: header Add card. Pick a column. Save.
 - Edit card: click a card. Body, owner, due, badges, checklist.
-  Hash or view state, not Next. Later: board list, new card page.
+  Hash or view state, not Next. Later: board list.
 
 Auth: none.
 
@@ -27,7 +28,7 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 - [x] Session 4 (expand A): richer cards, click to edit, old JSON still
       loads.
 - [x] Session 5 (expand B): column color, badges on compact cards.
-- [ ] Session 6 (expand C): one Add card page.
+- [x] Session 6 (expand C): one Add card page.
 - [ ] Session 7 (expand D): many boards, blank template.
 - [ ] Session 8 (expand E): persist, search, rename, styling.
 - [ ] Session 9: screenshots, demo video, README Demo, LinkedIn draft,
@@ -55,13 +56,13 @@ Sample: North Loop Photo jobs in `src/lib/sample-board.js`. Fake names.
 
 ## This session
 
-Session 5, expand B. Preset column colors. Cards pick up the column
-color. Badges show on compact cards.
+Session 6, expand C. One Add card in the header. New-card page with a
+column picker. Per-column add forms are gone.
 
 ## Next session
 
-Expand C. One Add card in the header. Opens a new-card page with a
-column picker. Remove the per-column add forms.
+Expand D. Board list. Switch boards. Blank template. Duplicate.
+Remove a board. Sample stays as one board.
 
 ## SHIPPED means
 

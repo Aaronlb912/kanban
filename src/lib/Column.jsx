@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Card } from './Card.jsx'
 import { COLUMN_COLORS, normalizeColor } from './board-json.js'
 
@@ -6,7 +5,6 @@ export function Column({
   column,
   dragId,
   over,
-  onAddCard,
   onRemoveCard,
   onRemoveColumn,
   onColor,
@@ -18,23 +16,6 @@ export function Column({
   onDropColumn,
   onDragEnd,
 }) {
-  const [title, setTitle] = useState('')
-  const [note, setNote] = useState('')
-  const [miss, setMiss] = useState('')
-
-  function submit(event) {
-    event.preventDefault()
-    const trimmed = title.trim()
-    if (!trimmed) {
-      setMiss('Need a job title.')
-      return
-    }
-    onAddCard(column.id, { title: trimmed, note: note.trim() })
-    setTitle('')
-    setNote('')
-    setMiss('')
-  }
-
   const dropOnEnd =
     over && over.columnId === column.id && over.index === column.cards.length
 
@@ -101,26 +82,6 @@ export function Column({
           <div className="kb-drop-end" />
         ) : null}
       </div>
-      <form className="kb-add" onSubmit={submit}>
-        <label>
-          Job
-          <input
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Name, job"
-          />
-        </label>
-        <label>
-          Note
-          <input
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="Due date, who to call"
-          />
-        </label>
-        {miss ? <p className="kb-miss">{miss}</p> : null}
-        <button type="submit">Add card</button>
-      </form>
     </section>
   )
 }

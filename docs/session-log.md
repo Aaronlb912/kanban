@@ -83,3 +83,18 @@ Next session:
 - Expand C: one Add card page
 - Remove per-column add forms
 - Column picker on the new-card page
+
+## 2026-09-16 — session 6 (expand C)
+
+Runs: http://127.0.0.1:49218/ (`npm start`)
+
+Landed:
+- One Add card in the header
+- New-card page with column picker
+- Per-column add forms removed
+- Miss if no title, no column, or no columns on the board
+
+Next session:
+- Expand D: board list
+- Blank template
+- Duplicate and remove a board

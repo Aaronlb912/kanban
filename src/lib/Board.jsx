@@ -23,26 +23,6 @@ export function Board({ value, onChange }) {
   const [view, setView] = useState({ name: 'board' })
   const skipClick = useRef(false)
 
-  function addCard(columnId, fields) {
-    onChange({
-      ...value,
-      columns: value.columns.map((column) => {
-        if (column.id !== columnId) return column
-        return {
-          ...column,
-          cards: [
-            ...column.cards,
-            normalizeCard({
-              title: fields.title,
-              body: fields.note || '',
-              note: fields.note || '',
-            }),
-          ],
-        }
-      }),
-    })
-  }
-
   function removeCard(columnId, cardId) {
     onChange({
       ...value,
@@ -182,6 +162,27 @@ export function Board({ value, onChange }) {
     setView({ name: 'edit', columnId, cardId })
   }
 
+  function openNew() {
+    if (value.columns.length === 0) {
+      setMiss('Add a column first.')
+      return
+    }
+    setMiss('')
+    setView({ name: 'new', card: normalizeCard({ title: '' }) })
+  }
+
+  function createCard(nextCard, columnId) {
+    onChange({
+      ...value,
+      columns: value.columns.map((column) => {
+        if (column.id !== columnId) return column
+        return { ...column, cards: [...column.cards, nextCard] }
+      }),
+    })
+    setView({ name: 'board' })
+    setMiss('')
+  }
+
   function saveCard(nextCard, nextColumnId) {
     let board = updateCard(value, view.columnId, nextCard)
     if (nextColumnId && nextColumnId !== view.columnId) {
@@ -207,9 +208,23 @@ export function Board({ value, onChange }) {
   const open =
     view.name === 'edit' ? findCard(value, view.cardId) : null
 
+  if (view.name === 'new' && view.card) {
+    return (
+      <CardPage
+        mode="new"
+        board={value}
+        columnId={value.columns[0] ? value.columns[0].id : ''}
+        card={view.card}
+        onSave={createCard}
+        onCancel={cancelEdit}
+      />
+    )
+  }
+
   if (view.name === 'edit' && open) {
     return (
       <CardPage
+        mode="edit"
         board={value}
         columnId={open.column.id}
         card={open.card}
@@ -227,9 +242,12 @@ export function Board({ value, onChange }) {
           <p className="kb-kicker">Job board</p>
           <h1>{value.title}</h1>
           {value.note ? <p className="kb-note">{value.note}</p> : null}
-          <p className="kb-hint">Click a card to edit it. Drag to move it.</p>
+          <p className="kb-hint">Add card opens a page. Click a card to edit it. Drag to move it.</p>
         </div>
         <div className="kb-actions">
+          <button type="button" onClick={openNew}>
+            Add card
+          </button>
           <button type="button" onClick={() => downloadBoard(value)}>
             Download JSON
           </button>
@@ -256,7 +274,6 @@ export function Board({ value, onChange }) {
               column={column}
               dragId={dragId}
               over={over}
-              onAddCard={addCard}
               onRemoveCard={removeCard}
               onRemoveColumn={removeColumn}
               onColor={setColumnColor}
